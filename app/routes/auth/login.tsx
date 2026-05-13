@@ -240,11 +240,7 @@ export default function Login() {
 
         </div>
 
-        <div className="login-dots">
-          <div style={{ width: "18px", height: "18px", borderRadius: "50%", background: "#DA007C" }} />
-          <div style={{ width: "18px", height: "18px", borderRadius: "50%", background: "#C8E535" }} />
-          <div style={{ width: "18px", height: "18px", borderRadius: "50%", background: "#FF6B35" }} />
-        </div>
+        
 
       </div>
     </>

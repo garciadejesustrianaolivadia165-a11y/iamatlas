@@ -90,43 +90,16 @@ const notifications = [
   },
   {
     Icon: () => (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1565C0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DA007C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
       </svg>
     ),
-    bg: "#EBF2FF", title: "Nuevo club registrado",
+    bg: "#FFF0F8", title: "Nuevo club registrado",
     desc: "Club de Golf Punta Cana se ha unido a Atlas.",
     time: "Hace 15 min", unread: true,
-  },
-  {
-    Icon: () => (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F57F17" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-      </svg>
-    ),
-    bg: "#FFFDE7", title: "Evento próximo",
-    desc: "Práctica de Pádel mañana a las 09:00.",
-    time: "Hace 1 hora", unread: false,
-  },
-  {
-    Icon: () => (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6A1B9A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
-      </svg>
-    ),
-    bg: "#F3E5F5", title: "Reserva confirmada",
-    desc: "Tu reserva en Santo Domingo Country Club está vigente.",
-    time: "Hace 3 horas", unread: false,
-  },
-  {
-    Icon: () => (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C62828" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-      </svg>
-    ),
-    bg: "#FFEBEE", title: "Campeonato disponible",
-    desc: "El Campeonato Regional abre inscripciones hoy.",
-    time: "Ayer", unread: false,
   },
 ];
 
@@ -141,16 +114,15 @@ function useWindowWidth() {
 }
 
 export default function DashboardLayout() {
-  const location  = useLocation();
-  const navigate  = useNavigate();
+  const location    = useLocation();
+  const navigate    = useNavigate();
   const windowWidth = useWindowWidth();
-  const isMobile  = windowWidth < 768;
+  const isMobile    = windowWidth < 768;
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notifOpen,   setNotifOpen]   = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
 
-  // Cierra dropdown al hacer clic fuera
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
@@ -178,8 +150,9 @@ export default function DashboardLayout() {
   const unreadCount = notifications.filter(n => n.unread).length;
 
   const sidebarContent = (
-    <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
-      <div style={{ display: "flex", flexDirection: "column", gap: "4px", flex: 1, overflowY: "auto" }}>
+    <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0, overflow: "hidden" }}>
+      {/* Nav items — scrollable si hay muchos */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "4px", flex: 1, overflowY: "auto", minHeight: 0 }}>
         {navItems.map(({ to, label, Icon }) => {
           const active = location.pathname === to || location.pathname.startsWith(to + "/");
           return (
@@ -196,7 +169,7 @@ export default function DashboardLayout() {
         })}
       </div>
 
-      {/* Cerrar sesión anclado al fondo */}
+      {/* Cerrar sesión — siempre visible al fondo */}
       <div style={{ padding: "16px 16px 8px 24px", borderTop: "1px solid #f0f0f0", flexShrink: 0 }}>
         <button
           onClick={() => navigate("/login")}
@@ -214,7 +187,7 @@ export default function DashboardLayout() {
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: "#f5f7fa" }}>
 
-      {/* ── HEADER ── */}
+      {/* HEADER */}
       <header style={{ display: "flex", alignItems: "center", background: "white", borderBottom: "1px solid #eee", padding: isMobile ? "0 16px" : "0 28px", height: "72px", gap: isMobile ? "12px" : "20px", position: "sticky", top: 0, zIndex: 100, boxShadow: "0 1px 6px rgba(0,0,0,0.06)" }}>
 
         {isMobile && (
@@ -247,7 +220,7 @@ export default function DashboardLayout() {
           </button>
         )}
 
-        {/* ── CAMPANA con dropdown ── */}
+        {/* CAMPANA */}
         <div ref={notifRef} style={{ position: "relative" }}>
           <button
             onClick={() => setNotifOpen(o => !o)}
@@ -256,18 +229,14 @@ export default function DashboardLayout() {
             <IconBell />
           </button>
 
-          {/* Punto indicador con contador */}
           {unreadCount > 0 && (
             <div style={{ position: "absolute", top: "1px", right: "1px", minWidth: "16px", height: "16px", background: "#FF6B35", borderRadius: "100px", border: "2px solid white", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <span style={{ fontSize: "9px", color: "white", fontWeight: "700", lineHeight: 1, padding: "0 2px" }}>{unreadCount}</span>
             </div>
           )}
 
-          {/* Dropdown */}
           {notifOpen && (
             <div style={{ position: "absolute", top: "calc(100% + 12px)", right: isMobile ? "-60px" : 0, width: isMobile ? "300px" : "340px", background: "white", borderRadius: "16px", boxShadow: "0 8px 32px rgba(0,0,0,0.14)", border: "1px solid #f0f0f0", zIndex: 150, overflow: "hidden" }}>
-
-              {/* Header dropdown */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px", borderBottom: "1px solid #f0f0f0" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                   <span style={{ fontSize: "15px", fontWeight: "700", color: "#343C6A" }}>Notificaciones</span>
@@ -282,7 +251,6 @@ export default function DashboardLayout() {
                 </button>
               </div>
 
-              {/* Lista */}
               <div style={{ maxHeight: "380px", overflowY: "auto" }}>
                 {notifications.map((n, i) => (
                   <div key={i}
@@ -290,7 +258,6 @@ export default function DashboardLayout() {
                     onMouseEnter={e => { e.currentTarget.style.background = "#f5f5f5"; }}
                     onMouseLeave={e => { e.currentTarget.style.background = n.unread ? "#fafffe" : "white"; }}
                   >
-                    {/* Ícono en círculo */}
                     <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: n.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       <n.Icon />
                     </div>
@@ -306,7 +273,6 @@ export default function DashboardLayout() {
                 ))}
               </div>
 
-              {/* Footer */}
               <div style={{ padding: "12px 20px", textAlign: "center", borderTop: "1px solid #f0f0f0" }}>
                 <button style={{ background: "none", border: "none", cursor: "pointer", fontSize: "13px", color: "#64A508", fontWeight: "600" }}>
                   Ver todas las notificaciones
@@ -316,7 +282,7 @@ export default function DashboardLayout() {
           )}
         </div>
 
-        {/* ── CERRAR SESIÓN (header) ── */}
+        {/* CERRAR SESIÓN header */}
         <button
           onClick={() => navigate("/login")}
           title="Cerrar sesión"
@@ -327,7 +293,7 @@ export default function DashboardLayout() {
           <IconLogout />
         </button>
 
-        {/* ── FOTO PERFIL → navega a /profile ── */}
+        {/* FOTO PERFIL */}
         <Link to="/profile" style={{ flexShrink: 0, display: "flex" }}>
           <img
             src="/fotoperfil.svg"
@@ -337,7 +303,7 @@ export default function DashboardLayout() {
         </Link>
       </header>
 
-      {/* ── CUERPO ── */}
+      {/* CUERPO */}
       <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
 
         {isMobile && sidebarOpen && (
@@ -346,8 +312,22 @@ export default function DashboardLayout() {
 
         <aside style={
           isMobile
-            ? { position: "fixed", top: 0, left: sidebarOpen ? 0 : "-260px", width: "240px", height: "100vh", background: "white", display: "flex", flexDirection: "column", zIndex: 200, boxShadow: sidebarOpen ? "4px 0 20px rgba(0,0,0,0.15)" : "none", transition: "left 0.3s ease" }
-            : { width: "220px", minWidth: "220px", height: "calc(100vh - 72px)", position: "sticky", top: "72px", background: "white", display: "flex", flexDirection: "column", borderRight: "1px solid #eee", boxShadow: "2px 0 8px rgba(0,0,0,0.04)", paddingTop: "32px" }
+            ? {
+                position: "fixed", top: 0, left: sidebarOpen ? 0 : "-260px",
+                width: "240px", height: "100vh",
+                background: "white", display: "flex", flexDirection: "column",
+                zIndex: 200, overflow: "hidden",
+                boxShadow: sidebarOpen ? "4px 0 20px rgba(0,0,0,0.15)" : "none",
+                transition: "left 0.3s ease",
+              }
+            : {
+                width: "220px", minWidth: "220px",
+                height: "calc(100vh - 72px)", position: "sticky", top: "72px",
+                background: "white", display: "flex", flexDirection: "column",
+                borderRight: "1px solid #eee",
+                boxShadow: "2px 0 8px rgba(0,0,0,0.04)",
+                paddingTop: "32px", overflow: "hidden",
+              }
         }>
           {isMobile && (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 16px 12px 24px", borderBottom: "1px solid #f0f0f0", flexShrink: 0 }}>
