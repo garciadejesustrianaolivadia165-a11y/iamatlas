@@ -149,27 +149,28 @@ export default function DashboardLayout() {
 
   const unreadCount = notifications.filter(n => n.unread).length;
 
-  const sidebarContent = (
-    <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0, overflow: "hidden" }}>
-      {/* Nav items — scrollable si hay muchos */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "4px", flex: 1, overflowY: "auto", minHeight: 0 }}>
-        {navItems.map(({ to, label, Icon }) => {
-          const active = location.pathname === to || location.pathname.startsWith(to + "/");
-          return (
-            <div key={to} style={{ position: "relative" }}>
-              {active && (
-                <div style={{ position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)", width: 5, height: 36, background: "#64A508", borderRadius: "0 6px 6px 0" }} />
-              )}
-              <Link to={to} style={{ display: "flex", alignItems: "center", gap: "14px", padding: "12px 16px 12px 24px", borderRadius: "10px", marginLeft: "8px", marginRight: "8px", color: active ? "#64A508" : "#B0B7C3", background: active ? "#f3faeb" : "transparent", textDecoration: "none", fontSize: "15px", fontWeight: active ? "600" : "500", transition: "all 0.2s ease" }}>
-                <Icon />
-                {label}
-              </Link>
-            </div>
-          );
-        })}
+  // Nav items reutilizable
+  const navList = navItems.map(({ to, label, Icon }) => {
+    const active = location.pathname === to || location.pathname.startsWith(to + "/");
+    return (
+      <div key={to} style={{ position: "relative" }}>
+        {active && (
+          <div style={{ position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)", width: 5, height: 36, background: "#64A508", borderRadius: "0 6px 6px 0" }} />
+        )}
+        <Link to={to} style={{ display: "flex", alignItems: "center", gap: "14px", padding: "12px 16px 12px 24px", borderRadius: "10px", marginLeft: "8px", marginRight: "8px", color: active ? "#64A508" : "#B0B7C3", background: active ? "#f3faeb" : "transparent", textDecoration: "none", fontSize: "15px", fontWeight: active ? "600" : "500", transition: "all 0.2s ease" }}>
+          <Icon />
+          {label}
+        </Link>
       </div>
+    );
+  });
 
-      {/* Cerrar sesión — siempre visible al fondo */}
+  // Sidebar desktop (flex normal)
+  const desktopSidebar = (
+    <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0, overflow: "hidden" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "4px", flex: 1, overflowY: "auto", minHeight: 0 }}>
+        {navList}
+      </div>
       <div style={{ padding: "16px 16px 8px 24px", borderTop: "1px solid #f0f0f0", flexShrink: 0 }}>
         <button
           onClick={() => navigate("/login")}
@@ -182,6 +183,41 @@ export default function DashboardLayout() {
         </button>
       </div>
     </div>
+  );
+
+  // Sidebar móvil (absolute positioning para garantizar logout visible)
+  const mobileSidebar = (
+    <>
+      {/* Cabecera del drawer */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 16px 12px 24px", borderBottom: "1px solid #f0f0f0", flexShrink: 0 }}>
+        <img src="/logoOF.svg" alt="iam atlas" style={{ height: "36px", display: "block" }} />
+        <button onClick={() => setSidebarOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#B0B7C3", padding: "4px" }}>
+          <IconCloseX />
+        </button>
+      </div>
+
+      {/* Área de contenido con position relative como ancla */}
+      <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
+
+        {/* Nav items: ocupa todo menos los 57px del logout */}
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: "57px", overflowY: "auto", paddingTop: "8px", display: "flex", flexDirection: "column", gap: "4px" }}>
+          {navList}
+        </div>
+
+        {/* Logout: siempre pegado al fondo, nunca necesita scroll */}
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "57px", borderTop: "1px solid #f0f0f0", background: "white", display: "flex", alignItems: "center", padding: "0 16px 0 24px" }}>
+          <button
+            onClick={() => navigate("/login")}
+            style={{ display: "flex", alignItems: "center", gap: "10px", background: "none", border: "none", cursor: "pointer", color: "#B0B7C3", fontSize: "14px", fontWeight: "500", width: "100%" }}
+            onMouseEnter={e => { e.currentTarget.style.color = "#DA007C"; }}
+            onMouseLeave={e => { e.currentTarget.style.color = "#B0B7C3"; }}
+          >
+            <IconLogout />
+            Cerrar sesión
+          </button>
+        </div>
+      </div>
+    </>
   );
 
   return (
@@ -312,32 +348,10 @@ export default function DashboardLayout() {
 
         <aside style={
           isMobile
-            ? {
-                position: "fixed", top: 0, left: sidebarOpen ? 0 : "-260px",
-                width: "240px", height: "100vh",
-                background: "white", display: "flex", flexDirection: "column",
-                zIndex: 200, overflow: "hidden",
-                boxShadow: sidebarOpen ? "4px 0 20px rgba(0,0,0,0.15)" : "none",
-                transition: "left 0.3s ease",
-              }
-            : {
-                width: "220px", minWidth: "220px",
-                height: "calc(100vh - 72px)", position: "sticky", top: "72px",
-                background: "white", display: "flex", flexDirection: "column",
-                borderRight: "1px solid #eee",
-                boxShadow: "2px 0 8px rgba(0,0,0,0.04)",
-                paddingTop: "32px", overflow: "hidden",
-              }
+            ? { position: "fixed", top: 0, left: sidebarOpen ? 0 : "-260px", width: "240px", height: "100vh", background: "white", display: "flex", flexDirection: "column", zIndex: 200, boxShadow: sidebarOpen ? "4px 0 20px rgba(0,0,0,0.15)" : "none", transition: "left 0.3s ease" }
+            : { width: "220px", minWidth: "220px", height: "calc(100vh - 72px)", position: "sticky", top: "72px", background: "white", display: "flex", flexDirection: "column", borderRight: "1px solid #eee", boxShadow: "2px 0 8px rgba(0,0,0,0.04)", paddingTop: "32px", overflow: "hidden" }
         }>
-          {isMobile && (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 16px 12px 24px", borderBottom: "1px solid #f0f0f0", flexShrink: 0 }}>
-              <img src="/logoOF.svg" alt="iam atlas" style={{ height: "36px", display: "block" }} />
-              <button onClick={() => setSidebarOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#B0B7C3", padding: "4px" }}>
-                <IconCloseX />
-              </button>
-            </div>
-          )}
-          {sidebarContent}
+          {isMobile ? mobileSidebar : desktopSidebar}
         </aside>
 
         <main style={{ flex: 1, overflow: "auto" }}>
