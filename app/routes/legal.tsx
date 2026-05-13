@@ -1,5 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router";
+
+function useWindowWidth() {
+  const [width, setWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1200
+  );
+  useEffect(() => {
+    const onResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  return width;
+}
 
 const LOREM = "Lorem ipsum dolor sit amet consectetur. Porttitor gravida sed metus ac quam nunc. Morbi nunc sed tempus facilisis dignissim sed. Hac pulvinar euismod odio morbi cras. Nunc pulvinar faucibus quam dui.\n\nSed ac nisi accumsan malesuada adipiscing accumsan diam. Eu ipsum a eu risus blandit vulputate nibh libero. Lectus nulla ullamcorper sagittis purus quisque est. Vestibulum facilisis egestas lorem vitae in in purus. Sed ac nisi accumsan malesuada adipiscing accumsan diam. Eu ipsum a eu risus blandit vulputate nibh libero. Lectus nulla ullamcorper sagittis purus quisque est.";
 
@@ -14,17 +26,23 @@ const sections = [
 ];
 
 export default function Legal() {
+  const windowWidth = useWindowWidth();
+  const isMobile = windowWidth < 768;
+
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <div style={{ padding: "32px", maxWidth: "1100px" }}>
+    <div style={{
+      padding: isMobile ? "16px" : "32px",
+      maxWidth: isMobile ? "100%" : "1100px",
+    }}>
 
-      {/* Cards superiores — misma altura */}
+      {/* Cards superiores */}
       <div style={{
         display: "grid",
-        gridTemplateColumns: "1fr 320px",
-        gap: "24px",
-        marginBottom: "32px",
+        gridTemplateColumns: isMobile ? "1fr" : "1fr 320px",
+        gap: "20px",
+        marginBottom: "28px",
         alignItems: "stretch",
       }}>
 
@@ -36,7 +54,7 @@ export default function Legal() {
           <div style={{
             background: "white",
             borderRadius: "20px",
-            padding: "32px 28px",
+            padding: isMobile ? "24px 20px" : "32px 28px",
             boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
             flex: 1,
             display: "flex",
@@ -66,7 +84,7 @@ export default function Legal() {
           <div style={{
             background: "white",
             borderRadius: "20px",
-            padding: "32px 28px",
+            padding: isMobile ? "24px 20px" : "32px 28px",
             boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
             flex: 1,
             display: "flex",
@@ -96,6 +114,9 @@ export default function Legal() {
                 alignItems: "center",
                 gap: "8px",
                 transition: "background 0.2s ease",
+                width: isMobile ? "100%" : "auto",
+                justifyContent: "center",
+                boxSizing: "border-box",
               }}
             >
               <img src="/IconsAV.svg" alt="" style={{ width: "16px", height: "16px" }} />
@@ -114,7 +135,7 @@ export default function Legal() {
             <div
               key={index}
               style={{
-                borderRadius: "40px",
+                borderRadius: isMobile ? "20px" : "40px",
                 boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
                 overflow: "hidden",
               }}
@@ -123,14 +144,14 @@ export default function Legal() {
                 onClick={() => setOpenIndex(isOpen ? null : index)}
                 style={{
                   width: "100%",
-                  padding: "20px 28px",
+                  padding: isMobile ? "16px 20px" : "20px 28px",
                   background: section.color,
                   border: "none",
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
                   cursor: "pointer",
-                  fontSize: "15px",
+                  fontSize: isMobile ? "14px" : "15px",
                   fontWeight: "600",
                   color: "#1a1a2e",
                   textAlign: "left",
@@ -142,6 +163,8 @@ export default function Legal() {
                   fontWeight: "300",
                   display: "inline-block",
                   lineHeight: 1,
+                  flexShrink: 0,
+                  marginLeft: "12px",
                   transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
                   transition: "transform 0.35s ease",
                 }}>
@@ -156,7 +179,7 @@ export default function Legal() {
               }}>
                 <div style={{
                   background: "white",
-                  padding: "28px 32px",
+                  padding: isMobile ? "20px" : "28px 32px",
                   fontSize: "14px",
                   color: "#444",
                   lineHeight: "1.9",

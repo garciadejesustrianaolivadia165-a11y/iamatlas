@@ -1,4 +1,16 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+
+function useWindowWidth() {
+  const [width, setWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1200
+  );
+  useEffect(() => {
+    const onResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  return width;
+}
 
 const IconPencil = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -47,6 +59,9 @@ const Toggle = ({ value, onChange }: { value: boolean; onChange: () => void }) =
 type Tab = "editar" | "avatar" | "seguridad";
 
 export default function Profile() {
+  const windowWidth = useWindowWidth();
+  const isMobile = windowWidth < 768;
+
   const [activeTab, setActiveTab] = useState<Tab>("editar");
   const [photoSrc, setPhotoSrc]   = useState<string>("/fotoperfil.svg");
   const [multiDevice, setMultiDevice]   = useState(true);
@@ -60,16 +75,44 @@ export default function Profile() {
     if (file) setPhotoSrc(URL.createObjectURL(file));
   };
 
+  const SaveButton = () => (
+    <div style={{ display: "flex", justifyContent: isMobile ? "center" : "flex-end", marginTop: "24px" }}>
+      <button
+        style={{ display: "flex", alignItems: "center", gap: "8px", padding: "12px 28px", borderRadius: "100px", border: "2px solid #DA007C", background: "white", color: "#DA007C", fontSize: "15px", fontWeight: "600", cursor: "pointer", transition: "background 0.2s ease", width: isMobile ? "100%" : "auto", justifyContent: "center" }}
+        onMouseEnter={e => { e.currentTarget.style.background = "#FFF0F8"; }}
+        onMouseLeave={e => { e.currentTarget.style.background = "white"; }}
+      >
+        <IconPlay /> Guardar
+      </button>
+    </div>
+  );
+
   return (
-    <div style={{ padding: "32px", fontFamily: "Inter, sans-serif" }}>
+    <div style={{ padding: isMobile ? "16px" : "32px", fontFamily: "Inter, sans-serif" }}>
       <div style={{
         background: "white", borderRadius: "20px",
-        boxShadow: "0 2px 16px rgba(0,0,0,0.07)", padding: "32px",
+        boxShadow: "0 2px 16px rgba(0,0,0,0.07)",
+        padding: isMobile ? "20px 16px" : "32px",
       }}>
 
-        {/* Tabs + título */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "32px" }}>
-          <div style={{ display: "flex", gap: "32px" }}>
+        {/* ── Tabs + título ── */}
+        <div style={{
+          display: "flex",
+          flexDirection: isMobile ? "column" : "row",
+          justifyContent: "space-between",
+          alignItems: isMobile ? "flex-start" : "flex-start",
+          gap: isMobile ? "16px" : "0",
+          marginBottom: "32px",
+        }}>
+          {/* Tabs — scrollable horizontally on mobile */}
+          <div style={{
+            display: "flex",
+            gap: isMobile ? "20px" : "32px",
+            overflowX: "auto",
+            width: isMobile ? "100%" : "auto",
+            paddingBottom: isMobile ? "4px" : "0",
+            scrollbarWidth: "none",
+          }}>
             {([
               { key: "editar",    label: "Editar Perfil" },
               { key: "avatar",    label: "Mi Avatar"     },
@@ -80,40 +123,65 @@ export default function Profile() {
                 onClick={() => setActiveTab(tab.key)}
                 style={{
                   background: "none", border: "none", cursor: "pointer",
-                  fontSize: "15px", fontWeight: activeTab === tab.key ? "600" : "400",
+                  fontSize: isMobile ? "14px" : "15px",
+                  fontWeight: activeTab === tab.key ? "600" : "400",
                   color: activeTab === tab.key ? "#78C609" : "#aaa",
-                  paddingBottom: "8px",
+                  paddingBottom: "8px", whiteSpace: "nowrap",
                   borderBottom: activeTab === tab.key ? "2px solid #78C609" : "2px solid transparent",
                   transition: "all 0.2s ease",
+                  flexShrink: 0,
                 }}
               >
                 {tab.label}
               </button>
             ))}
           </div>
-          <div style={{ textAlign: "right" }}>
-            <p style={{ fontSize: "16px", fontWeight: "700", color: "#1a1a1a", margin: "0 0 4px" }}>
-              Información personal
-            </p>
-            <p style={{ fontSize: "13px", color: "#aaa", margin: 0 }}>
-              Actualiza tus datos personales y preferencias
-            </p>
-          </div>
+
+          {/* Título — oculto en móvil para ahorrar espacio */}
+          {!isMobile && (
+            <div style={{ textAlign: "right" }}>
+              <p style={{ fontSize: "16px", fontWeight: "700", color: "#1a1a1a", margin: "0 0 4px" }}>
+                Información personal
+              </p>
+              <p style={{ fontSize: "13px", color: "#aaa", margin: 0 }}>
+                Actualiza tus datos personales y preferencias
+              </p>
+            </div>
+          )}
         </div>
 
         {/* ── TAB: EDITAR PERFIL ── */}
         {activeTab === "editar" && (
           <>
-            <div style={{ display: "flex", gap: "32px", alignItems: "flex-start" }}>
-              <div style={{ position: "relative", flexShrink: 0 }}>
+            <div style={{
+              display: "flex",
+              flexDirection: isMobile ? "column" : "row",
+              gap: "32px",
+              alignItems: "flex-start",
+            }}>
+              {/* Foto de perfil */}
+              <div style={{
+                position: "relative", flexShrink: 0,
+                alignSelf: isMobile ? "center" : "flex-start",
+              }}>
                 <input ref={fileInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handlePhotoChange} />
                 <img src={photoSrc} alt="Perfil" style={{ width: "90px", height: "90px", borderRadius: "50%", objectFit: "cover", border: "3px solid #eee" }} />
-                <button onClick={() => fileInputRef.current?.click()} style={{ position: "absolute", bottom: "4px", right: "4px", width: "28px", height: "28px", borderRadius: "50%", background: "#78C609", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  style={{ position: "absolute", bottom: "4px", right: "4px", width: "28px", height: "28px", borderRadius: "50%", background: "#78C609", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+                >
                   <IconPencil />
                 </button>
               </div>
-              <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
-                <div><label style={labelStyle}>Nombre</label><input type="text" placeholder="INgrese su nombre" style={inputStyle} /></div>
+
+              {/* Formulario */}
+              <div style={{
+                flex: 1, width: "100%",
+                display: "grid",
+                gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+                gap: "20px",
+              }}>
+                <div><label style={labelStyle}>Nombre</label><input type="text" placeholder="Ingrese su nombre" style={inputStyle} /></div>
                 <div><label style={labelStyle}>Apellido</label><input type="text" placeholder="Ingrese su apellido" style={inputStyle} /></div>
                 <div><label style={labelStyle}>Correo Electrónico</label><input type="email" placeholder="nombre@gmail.com" style={inputStyle} /></div>
                 <div><label style={labelStyle}>Contraseña</label><input type="password" defaultValue="12345678910" style={inputStyle} /></div>
@@ -121,7 +189,9 @@ export default function Profile() {
                   <label style={labelStyle}>Genero</label>
                   <div style={{ position: "relative" }}>
                     <select style={{ ...inputStyle, appearance: "none", cursor: "pointer" }}>
-                      <option>Femenino</option><option>Masculino</option><option>Indefinido</option>
+                      <option>Femenino</option>
+                      <option>Masculino</option>
+                      <option>Indefinido</option>
                     </select>
                     <svg style={{ position: "absolute", right: "16px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
                   </div>
@@ -130,29 +200,32 @@ export default function Profile() {
               </div>
             </div>
 
-            <div style={{ marginTop: "32px", padding: "24px", borderRadius: "16px", border: "1px solid #f0f0f0" }}>
+            {/* Contraseña */}
+            <div style={{ marginTop: "32px", padding: isMobile ? "16px" : "24px", borderRadius: "16px", border: "1px solid #f0f0f0" }}>
               <p style={{ fontSize: "16px", fontWeight: "700", color: "#1a1a1a", margin: "0 0 4px" }}>Contraseña</p>
               <p style={{ fontSize: "13px", color: "#aaa", margin: "0 0 20px" }}>Administra la seguridad de tu cuenta y contraseña</p>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{
+                display: "flex",
+                flexDirection: isMobile ? "column" : "row",
+                justifyContent: "space-between",
+                alignItems: isMobile ? "flex-start" : "center",
+                gap: isMobile ? "16px" : "0",
+              }}>
                 <div>
                   <p style={{ fontSize: "14px", fontWeight: "600", color: "#1a1a1a", margin: "0 0 4px" }}>Cambiar contraseña</p>
                   <p style={{ fontSize: "13px", color: "#aaa", margin: 0 }}>Administra la seguridad de tu cuenta y contraseña</p>
                 </div>
-                <button style={{ padding: "11px 24px", borderRadius: "100px", border: "2px solid #DA007C", background: "white", color: "#DA007C", fontSize: "14px", fontWeight: "600", cursor: "pointer", transition: "background 0.2s ease", whiteSpace: "nowrap" }}
+                <button
+                  style={{ padding: "11px 24px", borderRadius: "100px", border: "2px solid #DA007C", background: "white", color: "#DA007C", fontSize: "14px", fontWeight: "600", cursor: "pointer", transition: "background 0.2s ease", whiteSpace: "nowrap", width: isMobile ? "100%" : "auto" }}
                   onMouseEnter={e => { e.currentTarget.style.background = "#FFF0F8"; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = "white"; }}>
+                  onMouseLeave={e => { e.currentTarget.style.background = "white"; }}
+                >
                   Cambiar Contraseña
                 </button>
               </div>
             </div>
 
-            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "24px" }}>
-              <button style={{ display: "flex", alignItems: "center", gap: "8px", padding: "12px 28px", borderRadius: "100px", border: "2px solid #DA007C", background: "white", color: "#DA007C", fontSize: "15px", fontWeight: "600", cursor: "pointer", transition: "background 0.2s ease" }}
-                onMouseEnter={e => { e.currentTarget.style.background = "#FFF0F8"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "white"; }}>
-                <IconPlay /> Guardar
-              </button>
-            </div>
+            <SaveButton />
           </>
         )}
 
@@ -160,8 +233,11 @@ export default function Profile() {
         {activeTab === "avatar" && (
           <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
 
-            {/* Inputs dispositivo */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+              gap: "20px",
+            }}>
               <div>
                 <label style={labelStyle}>Nombre de dispositivo</label>
                 <input type="text" placeholder="IPhone 17 Pro Max" style={inputStyle} />
@@ -172,7 +248,6 @@ export default function Profile() {
               </div>
             </div>
 
-            {/* Notificaciones */}
             <div>
               <p style={{ fontSize: "15px", fontWeight: "700", color: "#1a1a1a", margin: "0 0 20px" }}>
                 Notification
@@ -193,14 +268,7 @@ export default function Profile() {
               </div>
             </div>
 
-            {/* Guardar */}
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <button style={{ display: "flex", alignItems: "center", gap: "8px", padding: "12px 28px", borderRadius: "100px", border: "2px solid #DA007C", background: "white", color: "#DA007C", fontSize: "15px", fontWeight: "600", cursor: "pointer", transition: "background 0.2s ease" }}
-                onMouseEnter={e => { e.currentTarget.style.background = "#FFF0F8"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "white"; }}>
-                <IconPlay /> Guardar
-              </button>
-            </div>
+            <SaveButton />
           </div>
         )}
 
@@ -219,19 +287,13 @@ export default function Profile() {
 
             <div>
               <p style={{ fontSize: "15px", fontWeight: "700", color: "#78C609", margin: "0 0 20px" }}>Confirmar Acceso</p>
-              <div style={{ display: "flex", flexDirection: "column", gap: "16px", maxWidth: "500px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px", maxWidth: isMobile ? "100%" : "500px" }}>
                 <div><label style={labelStyle}>Contraseña Actual</label><input type="password" defaultValue="12345678910" style={inputStyle} /></div>
                 <div><label style={labelStyle}>Nueva Contraseña</label><input type="password" defaultValue="12345678910" style={inputStyle} /></div>
               </div>
             </div>
 
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <button style={{ display: "flex", alignItems: "center", gap: "8px", padding: "12px 28px", borderRadius: "100px", border: "2px solid #DA007C", background: "white", color: "#DA007C", fontSize: "15px", fontWeight: "600", cursor: "pointer", transition: "background 0.2s ease" }}
-                onMouseEnter={e => { e.currentTarget.style.background = "#FFF0F8"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "white"; }}>
-                <IconPlay /> Guardar
-              </button>
-            </div>
+            <SaveButton />
           </div>
         )}
 

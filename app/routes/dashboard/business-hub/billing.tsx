@@ -1,5 +1,17 @@
 import { Link } from "react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+function useWindowWidth() {
+  const [width, setWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1200
+  );
+  useEffect(() => {
+    const onResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  return width;
+}
 
 const IconStar = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DA007C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -41,31 +53,45 @@ const thStyle: React.CSSProperties = {
   padding: "10px 12px", fontSize: "11px", color: "#aaa",
   fontWeight: "600", textAlign: "left", borderBottom: "1px solid #eee",
   textTransform: "uppercase" as const, letterSpacing: "0.5px",
+  whiteSpace: "nowrap",
 };
 
 export default function Billing() {
+  const windowWidth = useWindowWidth();
+  const isMobile = windowWidth < 768;
+
   const [hoverAgregar, setHoverAgregar] = useState(false);
-  const [hoverEnviar, setHoverEnviar] = useState(false);
+  const [hoverEnviar, setHoverEnviar]   = useState(false);
 
   return (
-    <div style={{ padding: "32px", display: "grid", gridTemplateColumns: "1fr 300px", gap: "24px", alignItems: "start" }}>
+    <div style={{
+      padding: isMobile ? "16px" : "32px",
+      display: "grid",
+      gridTemplateColumns: isMobile ? "1fr" : "1fr 300px",
+      gap: "24px",
+      alignItems: "start",
+    }}>
 
       {/* ── COLUMNA IZQUIERDA ── */}
       <div>
-        <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "20px" }}>
+        {/* Header — Volver + título */}
+        <div style={{
+          display: "flex",
+          flexDirection: isMobile ? "column" : "row",
+          alignItems: isMobile ? "flex-start" : "center",
+          gap: isMobile ? "8px" : "14px",
+          marginBottom: "20px",
+        }}>
           <Link
             to="/business-hub"
-            style={{
-              display: "inline-flex", alignItems: "center", gap: "6px",
-              color: "#2D60FF", textDecoration: "none", fontSize: "14px", fontWeight: 500,
-            }}
+            style={{ display: "inline-flex", alignItems: "center", gap: "6px", color: "#2D60FF", textDecoration: "none", fontSize: "14px", fontWeight: 500, flexShrink: 0 }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2D60FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="15 18 9 12 15 6" />
+              <polyline points="15 18 9 12 15 6"/>
             </svg>
             Volver atras
           </Link>
-          <h2 style={{ fontSize: "20px", fontWeight: "700", color: "#343C6A", margin: 0 }}>
+          <h2 style={{ fontSize: isMobile ? "16px" : "20px", fontWeight: "700", color: "#343C6A", margin: 0 }}>
             Detalle de facturación #000000-2026
           </h2>
         </div>
@@ -73,29 +99,32 @@ export default function Billing() {
         {/* Card principal */}
         <div style={{ background: "white", borderRadius: "16px", boxShadow: "0 2px 12px rgba(0,0,0,0.07)", marginBottom: "20px", overflow: "hidden" }}>
 
-          {/* Header de la factura */}
-          <div style={{ padding: "20px 24px", display: "flex", alignItems: "flex-start", gap: "16px", borderBottom: "1px solid #f0f0f0" }}>
-            <img
-              src="/empresa.svg"
-              alt="Empresa"
-              style={{ width: "80px", height: "80px", objectFit: "contain", flexShrink: 0 }}
-            />
-            <div style={{ flex: 1 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          {/* Header factura */}
+          <div style={{
+            padding: isMobile ? "16px" : "20px 24px",
+            display: "flex",
+            flexDirection: isMobile ? "column" : "row",
+            alignItems: isMobile ? "flex-start" : "flex-start",
+            gap: "16px",
+            borderBottom: "1px solid #f0f0f0",
+          }}>
+            <img src="/empresa.svg" alt="Empresa" style={{ width: "80px", height: "80px", objectFit: "contain", flexShrink: 0 }} />
+            <div style={{ flex: 1, width: "100%" }}>
+              <div style={{
+                display: "flex",
+                flexDirection: isMobile ? "column" : "row",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                gap: isMobile ? "12px" : "0",
+              }}>
                 <div>
                   <p style={{ fontWeight: "700", fontSize: "15px", color: "#1a1a1a", margin: "0 0 4px" }}>Club registrado #1</p>
-                  <p style={{ fontSize: "13px", color: "#666", margin: "0 0 2px" }}>José García</p>
-                  <p style={{ fontSize: "13px", color: "#666", margin: "0 0 2px" }}>789/1 Sector-2c, 38200 Santo Domingo, Rep. Dom</p>
-                  <p style={{ fontSize: "13px", color: "#666", margin: "0 0 2px" }}>848172194 | Club#1@gmail.com</p>
-                  <p style={{ fontSize: "13px", color: "#666", margin: "0 0 2px" }}>NCF: 362 521 879 00034</p>
-                  <p style={{ fontSize: "13px", color: "#666", margin: 0 }}>RNC: 842-484021</p>
+                  {["José García", "789/1 Sector-2c, 38200 Santo Domingo, Rep. Dom", "848172194 | Club#1@gmail.com", "NCF: 362 521 879 00034", "RNC: 842-484021"].map((line, i) => (
+                    <p key={i} style={{ fontSize: "13px", color: "#666", margin: "0 0 2px" }}>{line}</p>
+                  ))}
                 </div>
-                <div style={{ textAlign: "right" }}>
-                  <span style={{
-                    background: "#f5f5f5", borderRadius: "100px",
-                    padding: "6px 14px", fontSize: "12px",
-                    fontWeight: "600", color: "#555", display: "block", marginBottom: "16px",
-                  }}>
+                <div style={{ textAlign: isMobile ? "left" : "right" }}>
+                  <span style={{ background: "#f5f5f5", borderRadius: "100px", padding: "6px 14px", fontSize: "12px", fontWeight: "600", color: "#555", display: "inline-block", marginBottom: "16px" }}>
                     #000000-2026
                   </span>
                   <p style={{ fontSize: "12px", color: "#aaa", margin: "0 0 4px" }}>Cantidad total</p>
@@ -106,7 +135,13 @@ export default function Billing() {
           </div>
 
           {/* Detalles */}
-          <div style={{ padding: "20px 24px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", borderBottom: "1px solid #f0f0f0" }}>
+          <div style={{
+            padding: isMobile ? "16px" : "20px 24px",
+            display: "grid",
+            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+            gap: "24px",
+            borderBottom: "1px solid #f0f0f0",
+          }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
               {[
                 { label: "Fecha de facturación", value: "01/04/2026" },
@@ -123,59 +158,56 @@ export default function Billing() {
             <div>
               <p style={{ fontSize: "11px", color: "#aaa", margin: "0 0 8px", fontWeight: "500" }}>Detalles de cliente</p>
               <p style={{ fontWeight: "700", fontSize: "14px", color: "#1a1a1a", margin: "0 0 4px" }}>José García</p>
-              {[
-                "789/1 Sector-2c, 38200 Santo Domingo, Rep. Dom",
-                "848172194 | Club#1@gmail.com",
-                "NCF: 362 521 879 00034",
-                "RNC: 842-484021",
-              ].map((line, i) => (
+              {["789/1 Sector-2c, 38200 Santo Domingo, Rep. Dom", "848172194 | Club#1@gmail.com", "NCF: 362 521 879 00034", "RNC: 842-484021"].map((line, i) => (
                 <p key={i} style={{ fontSize: "13px", color: "#666", margin: "0 0 2px" }}>{line}</p>
               ))}
               <p style={{ fontSize: "11px", color: "#aaa", margin: "16px 0 4px", fontWeight: "500" }}>Notas:</p>
               <p style={{ fontSize: "13px", color: "#666", margin: 0, lineHeight: 1.6 }}>
-                Lorem ipsum dolor sit amet consectetur. Porttitor gravida sed metus ac quam nunc. Morbi nunc sed tempus facilisis dignissim sed. Hac pulvinar euismod odio morbi cras. Nunc pulvinar faucibus quam dui.
+                Lorem ipsum dolor sit amet consectetur. Porttitor gravida sed metus ac quam nunc.
               </p>
             </div>
           </div>
 
-          {/* Tabla */}
-          <div style={{ padding: "20px 24px" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr>
-                  {["No.", "Artículo", "Cantidad", "Precio Unitario", "ITBS", "Subtotal", "Total"].map(h => (
-                    <th key={h} style={thStyle}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {items.map(item => (
-                  <tr key={item.no}>
-                    <td style={tdStyle}>{item.no}</td>
-                    <td style={tdStyle}>
-                      <p style={{ margin: "0 0 2px", fontWeight: "500" }}>{item.articulo}</p>
-                      <p style={{ margin: 0, color: "#aaa", fontSize: "12px" }}>{item.desc}</p>
-                    </td>
-                    <td style={tdStyle}>
-                      <p style={{ margin: "0 0 2px" }}>{item.cantidad}</p>
-                      <p style={{ margin: 0, color: "#aaa", fontSize: "12px" }}>{item.unidad}</p>
-                    </td>
-                    <td style={tdStyle}>{item.precio}</td>
-                    <td style={tdStyle}>{item.itbs}</td>
-                    <td style={tdStyle}>{item.subtotal}</td>
-                    <td style={tdStyle}>{item.total}</td>
+          {/* Tabla — scroll horizontal en móvil */}
+          <div style={{ padding: isMobile ? "16px" : "20px 24px" }}>
+            <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" as any }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "600px" }}>
+                <thead>
+                  <tr>
+                    {["No.", "Artículo", "Cantidad", "Precio Unitario", "ITBS", "Subtotal", "Total"].map(h => (
+                      <th key={h} style={thStyle}>{h}</th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {items.map(item => (
+                    <tr key={item.no}>
+                      <td style={tdStyle}>{item.no}</td>
+                      <td style={tdStyle}>
+                        <p style={{ margin: "0 0 2px", fontWeight: "500" }}>{item.articulo}</p>
+                        <p style={{ margin: 0, color: "#aaa", fontSize: "12px" }}>{item.desc}</p>
+                      </td>
+                      <td style={tdStyle}>
+                        <p style={{ margin: "0 0 2px" }}>{item.cantidad}</p>
+                        <p style={{ margin: 0, color: "#aaa", fontSize: "12px" }}>{item.unidad}</p>
+                      </td>
+                      <td style={tdStyle}>{item.precio}</td>
+                      <td style={tdStyle}>{item.itbs}</td>
+                      <td style={tdStyle}>{item.subtotal}</td>
+                      <td style={tdStyle}>{item.total}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
             {/* Totales */}
             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "6px", marginTop: "16px", paddingTop: "16px", borderTop: "1px solid #f0f0f0" }}>
               {[
-                { label: "Subtotal",    value: "$50,000.00", bold: false },
-                { label: "Descuentos", value: "$0.00",       bold: false },
-                { label: "Total ITBS", value: "$3,500.00",   bold: false },
-                { label: "Total Price",value: "$53,000.00",  bold: true  },
+                { label: "Subtotal",     value: "$50,000.00", bold: false },
+                { label: "Descuentos",   value: "$0.00",       bold: false },
+                { label: "Total ITBS",   value: "$3,500.00",   bold: false },
+                { label: "Total Price",  value: "$53,000.00",  bold: true  },
               ].map(row => (
                 <div key={row.label} style={{ display: "flex", gap: "48px" }}>
                   <span style={{ fontSize: "13px", color: row.bold ? "#1a1a1a" : "#666", fontWeight: row.bold ? "700" : "400" }}>{row.label}</span>
@@ -190,69 +222,38 @@ export default function Billing() {
       {/* ── COLUMNA DERECHA ── */}
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
 
-        {/* Botón Agregar negocio */}
         <button
           onMouseEnter={() => setHoverAgregar(true)}
           onMouseLeave={() => setHoverAgregar(false)}
-          style={{
-            width: "100%", padding: "12px", borderRadius: "100px",
-            border: "2px solid #DA007C",
-            background: hoverAgregar ? "#FFF0F8" : "white",
-            color: "#DA007C",
-            fontSize: "14px", fontWeight: "600",
-            cursor: "pointer", display: "flex", alignItems: "center",
-            justifyContent: "center", gap: "8px",
-            transition: "background 0.2s ease",
-          }}
+          style={{ width: "100%", padding: "12px", borderRadius: "100px", border: "2px solid #DA007C", background: hoverAgregar ? "#FFF0F8" : "white", color: "#DA007C", fontSize: "14px", fontWeight: "600", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", transition: "background 0.2s ease" }}
         >
-          <IconStar />
-          Agregar negocio
+          <IconStar /> Agregar negocio
         </button>
 
-        {/* Status de facturación */}
         <div style={{ background: "white", borderRadius: "16px", padding: "20px", boxShadow: "0 2px 12px rgba(0,0,0,0.07)" }}>
           <p style={{ fontSize: "14px", fontWeight: "600", color: "#1a1a1a", margin: "0 0 12px" }}>Status de facturación</p>
-          <div style={{
-            display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
-            background: "#f0fdf8", borderRadius: "100px", padding: "10px",
-            color: "#16C098", fontWeight: "600", fontSize: "14px",
-          }}>
-            <IconClock />
-            En tiempo
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", background: "#f0fdf8", borderRadius: "100px", padding: "10px", color: "#16C098", fontWeight: "600", fontSize: "14px" }}>
+            <IconClock /> En tiempo
           </div>
         </div>
 
-        {/* Enviar factura */}
         <div style={{ background: "white", borderRadius: "16px", padding: "20px", boxShadow: "0 2px 12px rgba(0,0,0,0.07)" }}>
           <p style={{ fontSize: "13px", color: "#666", margin: "0 0 12px", textAlign: "center" }}>Factura pendiente a envió</p>
           <button
             onMouseEnter={() => setHoverEnviar(true)}
             onMouseLeave={() => setHoverEnviar(false)}
-            style={{
-              width: "100%", padding: "11px", borderRadius: "100px",
-              border: "2px solid #DA007C",
-              background: hoverEnviar ? "#FFF0F8" : "white",
-              color: "#DA007C",
-              fontSize: "14px", fontWeight: "600",
-              cursor: "pointer", display: "flex", alignItems: "center",
-              justifyContent: "center", gap: "8px",
-              transition: "background 0.2s ease",
-            }}
+            style={{ width: "100%", padding: "11px", borderRadius: "100px", border: "2px solid #DA007C", background: hoverEnviar ? "#FFF0F8" : "white", color: "#DA007C", fontSize: "14px", fontWeight: "600", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", transition: "background 0.2s ease" }}
           >
-            <IconSend />
-            Enviar factura
+            <IconSend /> Enviar factura
           </button>
         </div>
 
-        {/* Resumen */}
         <div style={{ background: "white", borderRadius: "16px", padding: "20px", boxShadow: "0 2px 12px rgba(0,0,0,0.07)" }}>
           <p style={{ fontSize: "15px", fontWeight: "700", color: "#1a1a1a", margin: "0 0 16px" }}>Resumen</p>
-
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "16px", paddingBottom: "16px", borderBottom: "1px solid #f0f0f0" }}>
             <span style={{ fontSize: "14px", color: "#333" }}>Total</span>
             <span style={{ fontSize: "14px", fontWeight: "700", color: "#1a1a1a" }}>$ 53,000.00</span>
           </div>
-
           {pagos.map((pago, i) => (
             <div key={i} style={{ marginBottom: "16px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
@@ -271,21 +272,13 @@ export default function Billing() {
               </div>
             </div>
           ))}
-
-          <div style={{
-            display: "flex", justifyContent: "space-between", alignItems: "center",
-            paddingTop: "16px", borderTop: "1px solid #f0f0f0",
-          }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: "16px", borderTop: "1px solid #f0f0f0" }}>
             <span style={{ fontSize: "13px", color: "#333" }}>Cantidad restante</span>
-            <span style={{
-              background: "#f5f5f5", borderRadius: "8px",
-              padding: "6px 12px", fontSize: "13px", fontWeight: "700", color: "#1a1a1a",
-            }}>
+            <span style={{ background: "#f5f5f5", borderRadius: "8px", padding: "6px 12px", fontSize: "13px", fontWeight: "700", color: "#1a1a1a" }}>
               $5,000.00 Incl. VAT
             </span>
           </div>
         </div>
-
       </div>
     </div>
   );

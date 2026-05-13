@@ -1,5 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
+
+function useWindowWidth() {
+  const [width, setWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1200
+  );
+  useEffect(() => {
+    const onResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  return width;
+}
 
 // ── Pie chart ──────────────────────────────────────────────────────────────────
 function polarToCartesian(cx: number, cy: number, r: number, deg: number) {
@@ -208,12 +220,57 @@ const ROWS: ServiceRow[] = [
   { name: "S.D Country Club", city: "Santo domingo", dates: ["01 de Abril 2026","01 de Abril 2026","01 de Abril 2026"], extra: "01 de Abril 2026",  active: false },
 ];
 
-function ServiceRowItem({ row, idx }: { row: ServiceRow; idx: number }) {
+function ServiceRowItem({ row, idx, isMobile }: { row: ServiceRow; idx: number; isMobile: boolean }) {
   const navigate = useNavigate();
   const [hovBtn, setHovBtn] = useState(false);
   const dateColor = row.active ? "#78C609" : "#333";
   const iconBg    = row.active ? "#78C609" : (idx % 3 === 0 ? "#e8f5d0" : idx % 3 === 1 ? "#c8f0b0" : "#d8f5c0");
   const iconColor = row.active ? "white" : "#5a9e20";
+
+  const folderIcon = (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+      <line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/>
+    </svg>
+  );
+
+  // Mobile: compact card layout
+  if (isMobile) {
+    return (
+      <div style={{
+        display: "flex", alignItems: "center", gap: 12,
+        padding: "12px 14px", borderRadius: 14, marginBottom: 10,
+        background: row.active ? "#fafff5" : "white",
+        border: row.active ? "1.5px solid #c8f0a0" : "1.5px solid #f0f0f0",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+      }}>
+        <div style={{ width: 40, height: 40, borderRadius: 10, background: iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          {folderIcon}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#222" }}>{row.name}</div>
+          <div style={{ fontSize: 11, color: "#78C609", marginTop: 2, fontWeight: 500 }}>{row.city}</div>
+          <div style={{ fontSize: 11, color: dateColor, marginTop: 2 }}>{row.dates[0]}</div>
+        </div>
+        <button
+          onMouseEnter={() => setHovBtn(true)}
+          onMouseLeave={() => setHovBtn(false)}
+          onClick={() => row.active && navigate("/clubs/details")}
+          style={{
+            padding: "6px 14px", borderRadius: 100, fontSize: 11, fontWeight: 600, cursor: "pointer", flexShrink: 0,
+            border: row.active ? "1.5px solid #78C609" : "1.5px solid #ddd",
+            background: row.active ? (hovBtn ? "#78C609" : "white") : (hovBtn ? "#f5f5f5" : "white"),
+            color: row.active ? (hovBtn ? "white" : "#78C609") : "#555",
+            transition: "all 0.2s ease",
+          }}
+        >
+          {row.active ? "Ver" : "Cancelar"}
+        </button>
+      </div>
+    );
+  }
+
+  // Desktop: full row layout
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "14px 18px", borderRadius: 14, marginBottom: 10, background: row.active ? "#fafff5" : "white", border: row.active ? "1.5px solid #c8f0a0" : "1.5px solid #f0f0f0", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
       <div style={{ width: 44, height: 44, borderRadius: 12, background: iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -254,6 +311,9 @@ function ServiceRowItem({ row, idx }: { row: ServiceRow; idx: number }) {
 // ── Main ───────────────────────────────────────────────────────────────────────
 export default function Overview() {
   const navigate = useNavigate();
+  const windowWidth = useWindowWidth();
+  const isMobile = windowWidth < 768;
+
   const [view, setView] = useState<"main" | "detail">("main");
   const [hovContact, setHovContact] = useState(false);
   const [hovVerMas,  setHovVerMas]  = useState(false);
@@ -261,8 +321,8 @@ export default function Overview() {
 
   if (view === "detail") {
     return (
-      <div style={{ padding: "28px 32px", fontFamily: "Inter, sans-serif", background: "#f7f8fa", minHeight: "100vh" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 28 }}>
+      <div style={{ padding: isMobile ? "16px" : "28px 32px", fontFamily: "Inter, sans-serif", background: "#f7f8fa", minHeight: "100vh" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24, flexWrap: "wrap" }}>
           <button
             onClick={() => setView("main")}
             onMouseEnter={() => setHovBack(true)}
@@ -280,9 +340,18 @@ export default function Overview() {
             </svg>
             Volver
           </button>
-          <h1 style={{ fontSize: 22, fontWeight: 800, color: "#1a1a1a", margin: 0 }}>Detalle de conexiones activas</h1>
+          <h1 style={{ fontSize: isMobile ? 18 : 22, fontWeight: 800, color: "#1a1a1a", margin: 0 }}>
+            Detalle de conexiones activas
+          </h1>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, marginBottom: 28 }}>
+
+        {/* Stat cards: 1 col mobile, 3 col desktop */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)",
+          gap: 16,
+          marginBottom: 24,
+        }}>
           {STAT_CARDS.map((s, i) => (
             <div key={i} style={{ background: "white", borderRadius: 20, padding: "20px 24px", boxShadow: "0 2px 10px rgba(0,0,0,0.05)", display: "flex", alignItems: "center", gap: 18 }}>
               <div style={{ width: 44, height: 44, borderRadius: 12, background: s.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -298,19 +367,26 @@ export default function Overview() {
             </div>
           ))}
         </div>
-        <div style={{ background: "white", borderRadius: 20, padding: "24px 28px", boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}>
+
+        <div style={{ background: "white", borderRadius: 20, padding: isMobile ? "16px" : "24px 28px", boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}>
           <h2 style={{ fontSize: 17, fontWeight: 700, color: "#1a1a1a", margin: 0, marginBottom: 20 }}>Bank Services List</h2>
-          {ROWS.map((row, i) => <ServiceRowItem key={i} row={row} idx={i} />)}
+          {ROWS.map((row, i) => <ServiceRowItem key={i} row={row} idx={i} isMobile={isMobile} />)}
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: "28px 32px", fontFamily: "Inter, sans-serif", background: "#f7f8fa", minHeight: "100vh" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 310px", gap: 24 }}>
+    <div style={{ padding: isMobile ? "16px" : "28px 32px", fontFamily: "Inter, sans-serif", background: "#f7f8fa", minHeight: "100vh" }}>
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: isMobile ? "1fr" : "1fr 310px",
+        gap: 24,
+      }}>
+        {/* ── LEFT COLUMN ── */}
         <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
 
+          {/* Conexiones Activas */}
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
               <span style={{ fontSize: 15, fontWeight: 700, color: "#1a1a1a" }}>Conexiones Activas</span>
@@ -318,14 +394,19 @@ export default function Overview() {
                 Ver detalle
               </span>
             </div>
-            <div style={{ display: "flex", gap: 14 }}>
+            <div style={{
+              display: "flex",
+              flexDirection: isMobile ? "column" : "row",
+              gap: 14,
+            }}>
               <ConexionCard green={true}  onClick={() => setView("detail")} />
               <ConexionCard green={false} onClick={() => setView("detail")} />
             </div>
           </div>
 
+          {/* Bar chart */}
           <div style={{ background: "white", borderRadius: 20, padding: 22, boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 8 }}>
               <span style={{ fontSize: 15, fontWeight: 700, color: "#1a1a1a" }}>Mis movimientos mensuales</span>
               <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
                 <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: "#555" }}>
@@ -339,7 +420,13 @@ export default function Overview() {
             <div style={{ width: "100%" }}><BarChart /></div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 22 }}>
+          {/* Mis Clubes + Acciones Rapidas */}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+            gap: 22,
+          }}>
+            {/* Mis Clubes */}
             <div style={{ background: "white", borderRadius: 20, padding: 22, boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}>
               <span style={{ fontSize: 15, fontWeight: 700, color: "#1a1a1a", display: "block", marginBottom: 20 }}>Mis Clubes</span>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
@@ -371,6 +458,8 @@ export default function Overview() {
                 Contactanos
               </button>
             </div>
+
+            {/* Acciones Rapidas */}
             <div style={{ background: "white", borderRadius: 20, padding: 22, boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}>
               <span style={{ fontSize: 15, fontWeight: 700, color: "#1a1a1a", display: "block", marginBottom: 16 }}>Acciones Rapidas</span>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -385,7 +474,10 @@ export default function Overview() {
           </div>
         </div>
 
+        {/* ── RIGHT COLUMN (below on mobile) ── */}
         <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
+
+          {/* Reservas mensuales */}
           <div style={{ background: "white", borderRadius: 20, padding: 22, boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}>
             <span style={{ fontSize: 15, fontWeight: 700, color: "#1a1a1a", display: "block", marginBottom: 18 }}>Reservas mensuales</span>
             {[
@@ -407,6 +499,8 @@ export default function Overview() {
               </div>
             ))}
           </div>
+
+          {/* Actividad Reciente */}
           <div style={{ background: "white", borderRadius: 20, padding: 22, boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}>
             <span style={{ fontSize: 15, fontWeight: 700, color: "#1a1a1a", display: "block", marginBottom: 16 }}>Actividad Reciente</span>
             <div style={{ display: "flex", justifyContent: "center" }}><PieChart /></div>

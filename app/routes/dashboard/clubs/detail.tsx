@@ -1,4 +1,17 @@
 import { Link } from "react-router";
+import { useEffect, useState } from "react";
+
+function useWindowWidth() {
+  const [width, setWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1200
+  );
+  useEffect(() => {
+    const onResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  return width;
+}
 
 const IconEdit = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DA007C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -26,25 +39,25 @@ const IconDocument = () => (
   </svg>
 );
 
-const btnStyle: React.CSSProperties = {
-  display: "flex", alignItems: "center", gap: "6px",
-  padding: "7px 16px", borderRadius: "100px",
-  border: "1.5px solid #DA007C", background: "white",
-  color: "#DA007C", fontSize: "13px", fontWeight: "500", cursor: "pointer",
-};
-
 export default function ClubDetail() {
+  const windowWidth = useWindowWidth();
+  const isMobile = windowWidth < 768;
+
+  const btnStyle: React.CSSProperties = {
+    display: "flex", alignItems: "center", gap: "6px",
+    padding: "7px 16px", borderRadius: "100px",
+    border: "1.5px solid #DA007C", background: "white",
+    color: "#DA007C", fontSize: "13px", fontWeight: "500", cursor: "pointer",
+  };
+
   return (
-    <div style={{ padding: "32px", fontFamily: "Inter, sans-serif" }}>
+    <div style={{ padding: isMobile ? "16px" : "32px", fontFamily: "Inter, sans-serif" }}>
 
       {/* Volver */}
       <div style={{ marginBottom: "24px" }}>
         <Link
           to="/clubs"
-          style={{
-            display: "inline-flex", alignItems: "center", gap: "6px",
-            color: "#2D60FF", textDecoration: "none", fontSize: "14px", fontWeight: 500,
-          }}
+          style={{ display: "inline-flex", alignItems: "center", gap: "6px", color: "#2D60FF", textDecoration: "none", fontSize: "14px", fontWeight: 500 }}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2D60FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="15 18 9 12 15 6"/>
@@ -53,8 +66,14 @@ export default function ClubDetail() {
         </Link>
       </div>
 
-      {/* Sección superior: card + detalles */}
-      <div style={{ display: "grid", gridTemplateColumns: "280px 1fr", gap: "32px", marginBottom: "40px", alignItems: "start" }}>
+      {/* Sección superior */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: isMobile ? "1fr" : "280px 1fr",
+        gap: "24px",
+        marginBottom: "40px",
+        alignItems: "start",
+      }}>
 
         {/* Card del club */}
         <div style={{ background: "white", borderRadius: "16px", boxShadow: "0 2px 12px rgba(0,0,0,0.07)", overflow: "hidden" }}>
@@ -69,31 +88,16 @@ export default function ClubDetail() {
             <p style={{ fontSize: "11px", color: "#aaa", margin: "0 0 2px", fontWeight: "500" }}>Ubicacion</p>
             <p style={{ fontSize: "14px", color: "#333", margin: "0 0 14px" }}>Connected 10/4/2026</p>
             <div style={{ display: "flex", gap: "10px" }}>
-              <button
-                style={btnStyle}
-                onMouseEnter={e => { e.currentTarget.style.background = "#FFF0F8"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "white"; }}
-              >
+              <button style={btnStyle} onMouseEnter={e => { e.currentTarget.style.background = "#FFF0F8"; }} onMouseLeave={e => { e.currentTarget.style.background = "white"; }}>
                 <IconEdit /> Editar
               </button>
-              <button
-                style={btnStyle}
-                onMouseEnter={e => { e.currentTarget.style.background = "#FFF0F8"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "white"; }}
-              >
+              <button style={btnStyle} onMouseEnter={e => { e.currentTarget.style.background = "#FFF0F8"; }} onMouseLeave={e => { e.currentTarget.style.background = "white"; }}>
                 <IconTrash /> Eliminar
               </button>
             </div>
           </div>
-          <div style={{
-            padding: "12px 20px", borderTop: "1px solid #f0f0f0",
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-          }}>
-            <span style={{
-              background: "#16C098", color: "white",
-              borderRadius: "100px", padding: "5px 16px",
-              fontSize: "13px", fontWeight: "600",
-            }}>
+          <div style={{ padding: "12px 20px", borderTop: "1px solid #f0f0f0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ background: "#16C098", color: "white", borderRadius: "100px", padding: "5px 16px", fontSize: "13px", fontWeight: "600" }}>
               Activo
             </span>
             <IconDocument />
@@ -101,13 +105,17 @@ export default function ClubDetail() {
         </div>
 
         {/* Detalles */}
-        <div style={{ background: "white", borderRadius: "16px", boxShadow: "0 2px 12px rgba(0,0,0,0.07)", padding: "28px" }}>
+        <div style={{ background: "white", borderRadius: "16px", boxShadow: "0 2px 12px rgba(0,0,0,0.07)", padding: isMobile ? "20px 16px" : "28px" }}>
           <h2 style={{ fontSize: "18px", fontWeight: "700", color: "#343C6A", margin: "0 0 24px" }}>
             Detalles de Club
           </h2>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "32px" }}>
-            {/* Columna izquierda */}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+            gap: isMobile ? "20px" : "32px",
+          }}>
+            {/* Fechas */}
             <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
               {[
                 { label: "Fecha de facturación", value: "01/04/2026" },
@@ -122,7 +130,7 @@ export default function ClubDetail() {
               ))}
             </div>
 
-            {/* Columna derecha: cliente */}
+            {/* Cliente */}
             <div>
               <p style={{ fontSize: "11px", color: "#aaa", margin: "0 0 8px", fontWeight: "500" }}>Detalles de cliente</p>
               <p style={{ fontSize: "15px", fontWeight: "700", color: "#1a1a1a", margin: "0 0 6px" }}>José García</p>
@@ -136,30 +144,37 @@ export default function ClubDetail() {
               ))}
               <p style={{ fontSize: "11px", color: "#aaa", margin: "16px 0 6px", fontWeight: "500" }}>Notas:</p>
               <p style={{ fontSize: "13px", color: "#666", margin: 0, lineHeight: 1.6 }}>
-                Lorem ipsum dolor sit amet consectetur. Porttitor gravida sed metus ac quam nunc. Morbi nunc sed tempus facilisis dignissim sed. Hac pulvinar euismod odio morbi cras. Nunc pulvinar faucibus quam dui.
+                Lorem ipsum dolor sit amet consectetur. Porttitor gravida sed metus ac quam nunc. Morbi nunc sed tempus facilisis dignissim sed.
               </p>
             </div>
           </div>
 
-          {/* Galería de fotos */}
-          <div style={{ marginTop: "28px", display: "flex", alignItems: "center", gap: "10px" }}>
+          {/* Galería — scroll horizontal en móvil */}
+          <div style={{
+            marginTop: "28px",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            overflowX: isMobile ? "auto" : "visible",
+            paddingBottom: isMobile ? "4px" : "0",
+          }}>
             {[1, 2, 3, 4, 5].map(i => (
               <img
                 key={i}
                 src="/padel.svg"
                 alt={`foto ${i}`}
                 style={{
-                  width: "90px", height: "64px", objectFit: "cover",
-                  borderRadius: "10px", cursor: "pointer",
+                  width: isMobile ? "80px" : "90px",
+                  height: "64px",
+                  objectFit: "cover",
+                  borderRadius: "10px",
+                  cursor: "pointer",
+                  flexShrink: 0,
                   border: i === 1 ? "2px solid #2D60FF" : "2px solid transparent",
                 }}
               />
             ))}
-            <div style={{
-              width: "32px", height: "32px", borderRadius: "50%",
-              background: "#f5f5f5", display: "flex", alignItems: "center",
-              justifyContent: "center", cursor: "pointer", flexShrink: 0,
-            }}>
+            <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "#f5f5f5", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2">
                 <polyline points="9 18 15 12 9 6"/>
               </svg>
@@ -177,7 +192,7 @@ export default function ClubDetail() {
           title="Mapa"
           src="https://maps.google.com/maps?q=Santo+Domingo,+Dominican+Republic&t=&z=14&ie=UTF8&iwloc=&output=embed"
           width="100%"
-          height="420"
+          height={isMobile ? 260 : 420}
           style={{ border: 0, display: "block" }}
           allowFullScreen
           loading="lazy"

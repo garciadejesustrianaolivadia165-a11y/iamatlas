@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Link, Outlet, useLocation } from "react-router";
 
 const IconHome = () => (
@@ -36,12 +37,6 @@ const IconSubscriptions = () => (
   </svg>
 );
 
-const IconSearch = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-  </svg>
-);
-
 const IconBell = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#718EBF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
@@ -49,13 +44,28 @@ const IconBell = () => (
   </svg>
 );
 
+const IconMenu = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+    <line x1="3" y1="6" x2="21" y2="6"/>
+    <line x1="3" y1="12" x2="21" y2="12"/>
+    <line x1="3" y1="18" x2="21" y2="18"/>
+  </svg>
+);
+
+const IconClose = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+    <line x1="18" y1="6" x2="6" y2="18"/>
+    <line x1="6" y1="6" x2="18" y2="18"/>
+  </svg>
+);
+
 const navItems = [
-  { to: "/dashboard",    label: "Overview",     Icon: IconHome          },
-  { to: "/business-hub", label: "Business Hub", Icon: IconBusiness      },
-  { to: "/clubs",        label: "Suscripcions", Icon: IconSubscriptions },
-  { to: "/profile",      label: "Profile",      Icon: IconProfile       },
-  { to: "/calendar",     label: "Calendar",     Icon: IconCalendar      },
-  { to: "/legal", label: "Setting", Icon: IconSettings },
+  { to: "/dashboard",    label: "Overview",       Icon: IconHome          },
+  { to: "/business-hub", label: "Business Hub",   Icon: IconBusiness      },
+  { to: "/clubs",        label: "Suscripcions",   Icon: IconSubscriptions },
+  { to: "/profile",      label: "Profile",        Icon: IconProfile       },
+  { to: "/calendar",     label: "Calendar",       Icon: IconCalendar      },
+  { to: "/legal",        label: "Setting",        Icon: IconSettings      },
 ];
 
 const pageTitles: Record<string, string> = {
@@ -68,47 +78,156 @@ const pageTitles: Record<string, string> = {
   "/legal":        "Términos",
 };
 
+function useWindowWidth() {
+  const [width, setWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1200
+  );
+  useEffect(() => {
+    const onResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  return width;
+}
+
 export default function DashboardLayout() {
   const location = useLocation();
+  const windowWidth = useWindowWidth();
+  const isMobile = windowWidth < 768;
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    if (isMobile) setSidebarOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (isMobile && sidebarOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [isMobile, sidebarOpen]);
+
   const title = Object.entries(pageTitles).find(([path]) =>
     location.pathname === path || location.pathname.startsWith(path + "/")
   )?.[1] ?? "Atlas";
+
+  const sidebarContent = (
+    <>
+      {navItems.map(({ to, label, Icon }) => {
+        const active = location.pathname === to || location.pathname.startsWith(to + "/");
+        return (
+          <div key={to} style={{ position: "relative" }}>
+            {active && (
+              <div style={{
+                position: "absolute",
+                left: 0,
+                top: "50%",
+                transform: "translateY(-50%)",
+                width: 5,
+                height: 36,
+                background: "#64A508",
+                borderRadius: "0 6px 6px 0",
+              }} />
+            )}
+            <Link
+              to={to}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "14px",
+                padding: "12px 16px 12px 24px",
+                borderRadius: "10px",
+                marginLeft: "8px",
+                marginRight: "8px",
+                color: active ? "#64A508" : "#B0B7C3",
+                background: active ? "#f3faeb" : "transparent",
+                textDecoration: "none",
+                fontSize: "15px",
+                fontWeight: active ? "600" : "500",
+                transition: "all 0.2s ease",
+              }}
+            >
+              <Icon />
+              {label}
+            </Link>
+          </div>
+        );
+      })}
+
+      <div style={{ marginTop: "auto", paddingLeft: "24px", paddingBottom: "8px" }}>
+        <Link to="/login" style={{ color: "#B0B7C3", fontSize: "13px", textDecoration: "none" }}>
+          Cerrar sesión
+        </Link>
+      </div>
+    </>
+  );
 
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: "#f5f7fa" }}>
 
       {/* ── HEADER ── */}
       <header style={{
-        display: "flex", alignItems: "center", background: "white",
-        borderBottom: "1px solid #eee", padding: "0 28px", height: "72px",
-        gap: "20px", position: "sticky", top: 0, zIndex: 100,
+        display: "flex",
+        alignItems: "center",
+        background: "white",
+        borderBottom: "1px solid #eee",
+        padding: isMobile ? "0 16px" : "0 28px",
+        height: "72px",
+        gap: isMobile ? "12px" : "20px",
+        position: "sticky",
+        top: 0,
+        zIndex: 100,
         boxShadow: "0 1px 6px rgba(0,0,0,0.06)",
       }}>
-        <div style={{ minWidth: "220px" }}>
+
+        {isMobile && (
+          <button
+            onClick={() => setSidebarOpen(true)}
+            style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", color: "#343C6A", flexShrink: 0 }}
+          >
+            <IconMenu />
+          </button>
+        )}
+
+        <div style={{ minWidth: isMobile ? "auto" : "220px" }}>
           <img src="/logoOF.svg" alt="iam atlas" style={{ height: "44px", display: "block" }} />
         </div>
 
-        <h1 style={{ fontSize: "22px", fontWeight: "700", color: "#343C6A", margin: 0, flex: 1 }}>
-          {title}
-        </h1>
+        {!isMobile && (
+          <h1 style={{ fontSize: "22px", fontWeight: "700", color: "#343C6A", margin: 0, flex: 1 }}>
+            {title}
+          </h1>
+        )}
 
-        <div style={{
-          display: "flex", alignItems: "center", gap: "8px",
-          background: "#f0f0f5", borderRadius: "100px",
-          padding: "8px 18px", width: "220px",
-        }}>
-          <IconSearch />
-          <input
-            type="text"
-            placeholder="Buscar"
-            style={{ border: "none", outline: "none", background: "transparent", fontSize: "14px", color: "#333", width: "100%" }}
-          />
-        </div>
+        {isMobile && <div style={{ flex: 1 }} />}
 
-        <button style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", color: "#718EBF", display: "flex", alignItems: "center" }}>
-          <IconSettings />
-        </button>
+        {!isMobile && (
+          <div style={{
+            display: "flex", alignItems: "center", gap: "8px",
+            background: "#f0f0f5", borderRadius: "100px",
+            padding: "8px 18px", width: "220px",
+          }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input
+              type="text"
+              placeholder="Buscar"
+              style={{ border: "none", outline: "none", background: "transparent", fontSize: "14px", color: "#333", width: "100%" }}
+            />
+          </div>
+        )}
 
+        {!isMobile && (
+          <button style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", color: "#718EBF" }}>
+            <IconSettings />
+          </button>
+        )}
+
+        {/* Bell con punto naranja — SVG */}
         <div style={{ position: "relative" }}>
           <button style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", display: "flex", alignItems: "center" }}>
             <IconBell />
@@ -116,67 +235,87 @@ export default function DashboardLayout() {
           <div style={{
             position: "absolute", top: "2px", right: "2px",
             width: "9px", height: "9px",
-            background: "#FF6B35", borderRadius: "50%", border: "2px solid white",
+            background: "#FF6B35", borderRadius: "50%",
+            border: "2px solid white",
           }} />
         </div>
 
         <img
           src="/fotoperfil.svg"
           alt="Perfil"
-          style={{ width: "44px", height: "44px", borderRadius: "50%", objectFit: "cover", cursor: "pointer", border: "2px solid #eee", flexShrink: 0 }}
+          style={{
+            width: "44px", height: "44px", borderRadius: "50%",
+            objectFit: "cover", cursor: "pointer",
+            border: "2px solid #eee", flexShrink: 0,
+          }}
         />
       </header>
 
       {/* ── CUERPO ── */}
       <div style={{ display: "flex", flex: 1 }}>
 
-        {/* Sidebar */}
-        <aside style={{
-          width: "220px", minWidth: "220px", background: "white",
-          padding: "32px 16px 32px 0", display: "flex", flexDirection: "column",
-          gap: "4px", borderRight: "1px solid #eee",
-          boxShadow: "2px 0 8px rgba(0,0,0,0.04)",
-        }}>
-          {navItems.map(({ to, label, Icon }) => {
-            const active = location.pathname === to || location.pathname.startsWith(to + "/");
-            return (
-              <div key={to} style={{ position: "relative" }}>
-                {active && (
-                  <div style={{
-                    position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)",
-                    width: 5, height: 36, background: "#64A508", borderRadius: "0 6px 6px 0",
-                  }} />
-                )}
-                <Link
-                  to={to}
-                  style={{
-                    display: "flex", alignItems: "center", gap: "14px",
-                    padding: "12px 16px 12px 24px", borderRadius: "10px",
-                    marginLeft: "8px",
-                    color: active ? "#64A508" : "#B0B7C3",
-                    background: active ? "#f3faeb" : "transparent",
-                    textDecoration: "none", fontSize: "15px",
-                    fontWeight: active ? "600" : "500",
-                    transition: "all 0.2s ease",
-                  }}
-                  onMouseEnter={e => { if (!active) { e.currentTarget.style.background = "#f8f8f8"; e.currentTarget.style.color = "#555"; }}}
-                  onMouseLeave={e => { if (!active) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#B0B7C3"; }}}
-                >
-                  <Icon />
-                  {label}
-                </Link>
-              </div>
-            );
-          })}
+        {isMobile && sidebarOpen && (
+          <div
+            onClick={() => setSidebarOpen(false)}
+            style={{
+              position: "fixed",
+              top: 0, left: 0, right: 0, bottom: 0,
+              background: "rgba(0,0,0,0.35)",
+              zIndex: 199,
+            }}
+          />
+        )}
 
-          <div style={{ marginTop: "auto", paddingLeft: "24px" }}>
-            <Link to="/login" style={{ color: "#B0B7C3", fontSize: "13px", textDecoration: "none" }}>
-              Cerrar sesión
-            </Link>
-          </div>
+        <aside style={
+          isMobile
+            ? {
+                position: "fixed",
+                top: 0,
+                left: sidebarOpen ? 0 : "-260px",
+                width: "240px",
+                height: "100vh",
+                background: "white",
+                padding: "0 0 32px 0",
+                display: "flex",
+                flexDirection: "column",
+                gap: "4px",
+                zIndex: 200,
+                boxShadow: sidebarOpen ? "4px 0 20px rgba(0,0,0,0.15)" : "none",
+                transition: "left 0.3s ease",
+                overflowY: "auto",
+              }
+            : {
+                width: "220px",
+                minWidth: "220px",
+                background: "white",
+                padding: "32px 16px 32px 0",
+                display: "flex",
+                flexDirection: "column",
+                gap: "4px",
+                borderRight: "1px solid #eee",
+                boxShadow: "2px 0 8px rgba(0,0,0,0.04)",
+              }
+        }>
+          {isMobile && (
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              padding: "16px 16px 12px 24px",
+              borderBottom: "1px solid #f0f0f0",
+              marginBottom: "8px",
+            }}>
+              <img src="/logoOF.svg" alt="iam atlas" style={{ height: "36px", display: "block" }} />
+              <button
+                onClick={() => setSidebarOpen(false)}
+                style={{ background: "none", border: "none", cursor: "pointer", color: "#B0B7C3", padding: "4px" }}
+              >
+                <IconClose />
+              </button>
+            </div>
+          )}
+
+          {sidebarContent}
         </aside>
 
-        {/* Contenido */}
         <main style={{ flex: 1, overflow: "auto" }}>
           <Outlet />
         </main>

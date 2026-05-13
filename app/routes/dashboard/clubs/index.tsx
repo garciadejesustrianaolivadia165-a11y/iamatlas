@@ -1,5 +1,17 @@
 import { Link } from "react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+function useWindowWidth() {
+  const [width, setWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1200
+  );
+  useEffect(() => {
+    const onResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  return width;
+}
 
 const IconDocument = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -34,23 +46,18 @@ const IconPlus = () => (
   </svg>
 );
 
-type Club = {
-  nombre: string;
-  ubicacion: string;
-  genero: string;
-  email: string;
-};
+type Club = { nombre: string; ubicacion: string; genero: string; email: string; };
 
 const clubs: Club[] = [
-  { nombre: "PlayByPoint", ubicacion: "Connected 10/4/2026", genero: "Femenino",   email: "play@gmail.com"   },
-  { nombre: "PlayByPoint", ubicacion: "Connected 10/4/2026", genero: "Masculino",  email: "play2@gmail.com"  },
-  { nombre: "PlayByPoint", ubicacion: "Connected 10/4/2026", genero: "Indefinido", email: "play3@gmail.com"  },
-  { nombre: "PlayByPoint", ubicacion: "Connected 10/4/2026", genero: "Femenino",   email: "play4@gmail.com"  },
-  { nombre: "PlayByPoint", ubicacion: "Connected 10/4/2026", genero: "Masculino",  email: "play5@gmail.com"  },
-  { nombre: "PlayByPoint", ubicacion: "Connected 10/4/2026", genero: "Indefinido", email: "play6@gmail.com"  },
-  { nombre: "PlayByPoint", ubicacion: "Connected 10/4/2026", genero: "Femenino",   email: "play7@gmail.com"  },
-  { nombre: "PlayByPoint", ubicacion: "Connected 10/4/2026", genero: "Masculino",  email: "play8@gmail.com"  },
-  { nombre: "PlayByPoint", ubicacion: "Connected 10/4/2026", genero: "Indefinido", email: "play9@gmail.com"  },
+  { nombre: "PlayByPoint", ubicacion: "Connected 10/4/2026", genero: "Femenino",   email: "play@gmail.com"  },
+  { nombre: "PlayByPoint", ubicacion: "Connected 10/4/2026", genero: "Masculino",  email: "play2@gmail.com" },
+  { nombre: "PlayByPoint", ubicacion: "Connected 10/4/2026", genero: "Indefinido", email: "play3@gmail.com" },
+  { nombre: "PlayByPoint", ubicacion: "Connected 10/4/2026", genero: "Femenino",   email: "play4@gmail.com" },
+  { nombre: "PlayByPoint", ubicacion: "Connected 10/4/2026", genero: "Masculino",  email: "play5@gmail.com" },
+  { nombre: "PlayByPoint", ubicacion: "Connected 10/4/2026", genero: "Indefinido", email: "play6@gmail.com" },
+  { nombre: "PlayByPoint", ubicacion: "Connected 10/4/2026", genero: "Femenino",   email: "play7@gmail.com" },
+  { nombre: "PlayByPoint", ubicacion: "Connected 10/4/2026", genero: "Masculino",  email: "play8@gmail.com" },
+  { nombre: "PlayByPoint", ubicacion: "Connected 10/4/2026", genero: "Indefinido", email: "play9@gmail.com" },
 ];
 
 const emptyClub: Club = { nombre: "", ubicacion: "", genero: "Femenino", email: "" };
@@ -61,84 +68,73 @@ const inputStyle: React.CSSProperties = {
   outline: "none", boxSizing: "border-box", background: "white",
 };
 
-const btnStyle: React.CSSProperties = {
-  display: "flex", alignItems: "center", gap: "6px",
-  padding: "7px 16px", borderRadius: "100px",
-  border: "1.5px solid #DA007C", background: "white",
-  color: "#DA007C", fontSize: "13px", fontWeight: "500", cursor: "pointer",
-};
-
 export default function ClubsIndex() {
+  const windowWidth = useWindowWidth();
+  const isMobile = windowWidth < 768;
+
   const [modal, setModal] = useState<{ open: boolean; isEdit: boolean; club: Club | null }>({
     open: false, isEdit: false, club: null,
   });
   const [form, setForm] = useState<Club>(emptyClub);
 
-  const openAdd = () => {
-    setForm(emptyClub);
-    setModal({ open: true, isEdit: false, club: null });
-  };
-
-  const openEdit = (club: Club) => {
-    setForm({ ...club });
-    setModal({ open: true, isEdit: true, club });
-  };
-
+  const openAdd  = () => { setForm(emptyClub); setModal({ open: true, isEdit: false, club: null }); };
+  const openEdit = (club: Club) => { setForm({ ...club }); setModal({ open: true, isEdit: true, club }); };
   const closeModal = () => setModal({ open: false, isEdit: false, club: null });
 
-  return (
-    <div style={{ padding: "32px" }}>
+  const btnStyle: React.CSSProperties = {
+    display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
+    padding: "7px 16px", borderRadius: "100px",
+    border: "1.5px solid #DA007C", background: "white",
+    color: "#DA007C", fontSize: "13px", fontWeight: "500", cursor: "pointer",
+  };
 
-      {/* Botón Agregar Clubes */}
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "24px" }}>
+  return (
+    <div style={{ padding: isMobile ? "16px" : "32px" }}>
+
+      {/* Botón Agregar */}
+      <div style={{ display: "flex", justifyContent: isMobile ? "stretch" : "flex-end", marginBottom: "24px" }}>
         <button
           onClick={openAdd}
           style={{
-            display: "flex", alignItems: "center", gap: "8px",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
             padding: "10px 22px", borderRadius: "100px",
             border: "2px solid #DA007C", background: "white",
             color: "#DA007C", fontSize: "14px", fontWeight: "600",
             cursor: "pointer", transition: "background 0.2s ease",
+            width: isMobile ? "100%" : "auto",
           }}
           onMouseEnter={e => { e.currentTarget.style.background = "#FFF0F8"; }}
           onMouseLeave={e => { e.currentTarget.style.background = "white"; }}
         >
-          <IconPlus />
-          Agregar Clubes
+          <IconPlus /> Agregar Clubes
         </button>
       </div>
 
-      {/* Título */}
       <h2 style={{ fontSize: "18px", fontWeight: "700", color: "#343C6A", marginBottom: "20px" }}>
         Conexiones Activas
       </h2>
 
       {/* Grid de cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)",
+        gap: "20px",
+      }}>
         {clubs.map((club, index) => (
           <div
             key={index}
-            style={{
-              background: "white", borderRadius: "16px",
-              boxShadow: "0 2px 12px rgba(0,0,0,0.07)", overflow: "hidden",
-            }}
+            style={{ background: "white", borderRadius: "16px", boxShadow: "0 2px 12px rgba(0,0,0,0.07)", overflow: "hidden" }}
           >
-            {/* Foto */}
             <img
               src="/padel.svg"
               alt="Club"
               style={{ width: "100%", height: "180px", objectFit: "cover", display: "block" }}
             />
-
-            {/* Info */}
             <div style={{ padding: "16px 20px 12px" }}>
               <p style={{ fontSize: "11px", color: "#aaa", margin: "0 0 2px", fontWeight: "500" }}>Nombre</p>
               <p style={{ fontSize: "15px", fontWeight: "700", color: "#1a1a1a", margin: "0 0 12px" }}>{club.nombre}</p>
-
               <p style={{ fontSize: "11px", color: "#aaa", margin: "0 0 2px", fontWeight: "500" }}>Ubicacion</p>
               <p style={{ fontSize: "14px", color: "#333", margin: "0 0 14px" }}>{club.ubicacion}</p>
-
-              {/* Botones Editar / Eliminar */}
               <div style={{ display: "flex", gap: "10px" }}>
                 <button
                   onClick={() => openEdit(club)}
@@ -157,20 +153,10 @@ export default function ClubsIndex() {
                 </button>
               </div>
             </div>
-
-            {/* Footer: Activo + icono documento */}
-            <div style={{
-              padding: "12px 20px", borderTop: "1px solid #f0f0f0",
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-            }}>
-              <span style={{
-                background: "#16C098", color: "white",
-                borderRadius: "100px", padding: "5px 16px",
-                fontSize: "13px", fontWeight: "600",
-              }}>
+            <div style={{ padding: "12px 20px", borderTop: "1px solid #f0f0f0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={{ background: "#16C098", color: "white", borderRadius: "100px", padding: "5px 16px", fontSize: "13px", fontWeight: "600" }}>
                 Activo
               </span>
-
               <Link to={`/clubs/${index + 1}`} style={{ color: "inherit", lineHeight: 0 }}>
                 <IconDocument />
               </Link>
@@ -184,22 +170,33 @@ export default function ClubsIndex() {
         <div
           onClick={closeModal}
           style={{
-            position: "fixed", inset: 0,
+            position: "fixed",
+            top: 0, left: 0, right: 0, bottom: 0,
             background: "rgba(0,0,0,0.35)",
             display: "flex", alignItems: "center", justifyContent: "center",
             zIndex: 1000,
+            padding: isMobile ? "16px" : "0",
           }}
         >
           <div
             onClick={e => e.stopPropagation()}
             style={{
               background: "white", borderRadius: "20px",
-              padding: "32px", width: "560px", maxWidth: "90vw",
+              padding: isMobile ? "24px 20px" : "32px",
+              width: isMobile ? "100%" : "560px",
+              maxWidth: "100%",
               boxShadow: "0 8px 40px rgba(0,0,0,0.15)",
             }}
           >
             {/* Cabecera */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "24px" }}>
+            <div style={{
+              display: "flex",
+              flexDirection: isMobile ? "column" : "row",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: isMobile ? "8px" : "0",
+              marginBottom: "24px",
+            }}>
               <div>
                 <p style={{ fontSize: "17px", fontWeight: "700", color: "#1a1a1a", margin: "0 0 4px" }}>
                   {modal.isEdit ? "Editar club" : "Agregar club"}
@@ -208,88 +205,73 @@ export default function ClubsIndex() {
                   {modal.isEdit ? "Actualiza la información del club." : "Ingresa la información del nuevo club."}
                 </p>
               </div>
-              <div style={{ textAlign: "right" }}>
-                <p style={{ fontSize: "12px", color: "#aaa", margin: "0 0 2px", fontWeight: "500" }}>
-                  {modal.isEdit ? "Edición" : "Registro"}
-                </p>
-                <p style={{ fontSize: "13px", fontWeight: "600", color: "#333", margin: 0 }}>
-                  {new Date().toLocaleDateString("es-ES", { day: "2-digit", month: "long", year: "numeric" })}
-                </p>
-              </div>
+              {!isMobile && (
+                <div style={{ textAlign: "right" }}>
+                  <p style={{ fontSize: "12px", color: "#aaa", margin: "0 0 2px", fontWeight: "500" }}>
+                    {modal.isEdit ? "Edición" : "Registro"}
+                  </p>
+                  <p style={{ fontSize: "13px", fontWeight: "600", color: "#333", margin: 0 }}>
+                    {new Date().toLocaleDateString("es-ES", { day: "2-digit", month: "long", year: "numeric" })}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Género */}
             <div style={{ marginBottom: "20px" }}>
-              <label style={{ fontSize: "13px", color: "#555", fontWeight: "500", display: "block", marginBottom: "8px" }}>
-                Genero
-              </label>
+              <label style={{ fontSize: "13px", color: "#555", fontWeight: "500", display: "block", marginBottom: "8px" }}>Genero</label>
               <div style={{ position: "relative" }}>
                 <select
                   value={form.genero}
                   onChange={e => setForm({ ...form, genero: e.target.value })}
-                  style={{
-                    width: "100%", padding: "12px 16px", borderRadius: "100px",
-                    border: "1.5px solid #e0e0e0", fontSize: "14px", color: "#333",
-                    outline: "none", background: "white", appearance: "none", cursor: "pointer",
-                  }}
+                  style={{ width: "100%", padding: "12px 16px", borderRadius: "100px", border: "1.5px solid #e0e0e0", fontSize: "14px", color: "#333", outline: "none", background: "white", appearance: "none", cursor: "pointer" }}
                 >
                   <option>Femenino</option>
                   <option>Masculino</option>
                   <option>Indefinido</option>
                 </select>
-                <svg style={{ position: "absolute", right: "16px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}
-                  width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2">
+                <svg style={{ position: "absolute", right: "16px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2">
                   <polyline points="6 9 12 15 18 9"/>
                 </svg>
               </div>
             </div>
 
             {/* Correo + Contraseña */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "32px" }}>
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+              gap: "16px", marginBottom: "32px",
+            }}>
               <div>
-                <label style={{ fontSize: "13px", color: "#555", fontWeight: "500", display: "block", marginBottom: "8px" }}>
-                  Correo Electrónico
-                </label>
-                <input
-                  type="email"
-                  placeholder="nombre@gmail.com"
-                  value={form.email}
-                  onChange={e => setForm({ ...form, email: e.target.value })}
-                  style={inputStyle}
-                />
+                <label style={{ fontSize: "13px", color: "#555", fontWeight: "500", display: "block", marginBottom: "8px" }}>Correo Electrónico</label>
+                <input type="email" placeholder="nombre@gmail.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} style={inputStyle} />
               </div>
               <div>
-                <label style={{ fontSize: "13px", color: "#555", fontWeight: "500", display: "block", marginBottom: "8px" }}>
-                  Contraseña
-                </label>
-                <input
-                  type="password"
-                  placeholder="••••••••••"
-                  defaultValue={modal.isEdit ? "placeholder" : ""}
-                  style={inputStyle}
-                />
+                <label style={{ fontSize: "13px", color: "#555", fontWeight: "500", display: "block", marginBottom: "8px" }}>Contraseña</label>
+                <input type="password" placeholder="••••••••••" defaultValue={modal.isEdit ? "placeholder" : ""} style={inputStyle} />
               </div>
             </div>
 
             {/* Botones */}
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div style={{
+              display: "flex",
+              flexDirection: isMobile ? "column" : "row",
+              gap: "12px",
+            }}>
               <button
                 style={btnStyle}
                 onMouseEnter={e => { e.currentTarget.style.background = "#FFF0F8"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "white"; }}
               >
-                <IconPlus />
-                {modal.isEdit ? "Guardar cambios" : "Agregar club"}
+                <IconPlus /> {modal.isEdit ? "Guardar cambios" : "Agregar club"}
               </button>
-
               <button
                 onClick={closeModal}
                 style={btnStyle}
                 onMouseEnter={e => { e.currentTarget.style.background = "#FFF0F8"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "white"; }}
               >
-                <IconTrash />
-                Cancelar
+                <IconTrash /> Cancelar
               </button>
             </div>
           </div>

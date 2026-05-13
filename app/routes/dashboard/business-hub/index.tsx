@@ -1,5 +1,17 @@
 import { Link } from "react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+function useWindowWidth() {
+  const [width, setWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1200
+  );
+  useEffect(() => {
+    const onResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  return width;
+}
 
 const IconDocument = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -40,10 +52,7 @@ const IconPlus = () => (
 );
 
 type Business = {
-  lugar: string;
-  fecha: string;
-  genero: string;
-  email: string;
+  lugar: string; fecha: string; genero: string; email: string;
 };
 
 const businesses: Business[] = [
@@ -59,7 +68,6 @@ const businesses: Business[] = [
 ];
 
 type ModalState = { open: boolean; isEdit: boolean; biz: Business | null };
-
 const emptyBiz: Business = { lugar: "", fecha: "", genero: "Femenino", email: "" };
 
 const inputStyle: React.CSSProperties = {
@@ -67,43 +75,37 @@ const inputStyle: React.CSSProperties = {
   border: "1.5px solid #e0e0e0", fontSize: "14px", color: "#333",
   outline: "none", boxSizing: "border-box", background: "white",
 };
-
 const selectStyle: React.CSSProperties = {
   width: "100%", padding: "12px 16px", borderRadius: "100px",
   border: "1.5px solid #e0e0e0", fontSize: "14px", color: "#333",
-  outline: "none", background: "white", appearance: "none" as const,
-  cursor: "pointer",
+  outline: "none", background: "white", appearance: "none" as const, cursor: "pointer",
 };
 
 export default function BusinessHub() {
+  const windowWidth = useWindowWidth();
+  const isMobile = windowWidth < 768;
+
   const [modal, setModal] = useState<ModalState>({ open: false, isEdit: false, biz: null });
   const [form, setForm] = useState<Business>(emptyBiz);
 
-  const openAdd = () => {
-    setForm(emptyBiz);
-    setModal({ open: true, isEdit: false, biz: null });
-  };
-
-  const openEdit = (biz: Business) => {
-    setForm({ ...biz });
-    setModal({ open: true, isEdit: true, biz });
-  };
-
+  const openAdd = () => { setForm(emptyBiz); setModal({ open: true, isEdit: false, biz: null }); };
+  const openEdit = (biz: Business) => { setForm({ ...biz }); setModal({ open: true, isEdit: true, biz }); };
   const closeModal = () => setModal({ open: false, isEdit: false, biz: null });
 
   return (
-    <div style={{ padding: "32px" }}>
+    <div style={{ padding: isMobile ? "16px" : "32px" }}>
 
-      {/* Botón Agregar negocio */}
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "24px" }}>
+      {/* Botón Agregar */}
+      <div style={{ display: "flex", justifyContent: isMobile ? "stretch" : "flex-end", marginBottom: "24px" }}>
         <button
           onClick={openAdd}
           style={{
-            display: "flex", alignItems: "center", gap: "8px",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
             padding: "10px 22px", borderRadius: "100px",
             border: "2px solid #DA007C", background: "white",
             color: "#DA007C", fontSize: "14px", fontWeight: "600",
             cursor: "pointer", transition: "background 0.2s ease",
+            width: isMobile ? "100%" : "auto",
           }}
           onMouseEnter={e => { e.currentTarget.style.background = "rgba(218,0,124,0.08)"; }}
           onMouseLeave={e => { e.currentTarget.style.background = "white"; }}
@@ -113,13 +115,16 @@ export default function BusinessHub() {
         </button>
       </div>
 
-      {/* Título */}
       <h2 style={{ fontSize: "18px", fontWeight: "700", color: "#343C6A", marginBottom: "20px" }}>
         Conexiones Activas
       </h2>
 
       {/* Grid de cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)",
+        gap: "20px",
+      }}>
         {businesses.map((biz, index) => (
           <div
             key={index}
@@ -150,39 +155,21 @@ export default function BusinessHub() {
             }}>
               <button
                 onClick={() => openEdit(biz)}
-                style={{
-                  display: "flex", alignItems: "center", gap: "6px",
-                  padding: "7px 16px", borderRadius: "100px",
-                  border: "1.5px solid #DA007C", background: "white",
-                  color: "#DA007C", fontSize: "13px", fontWeight: "500", cursor: "pointer",
-                }}
+                style={{ display: "flex", alignItems: "center", gap: "6px", padding: "7px 16px", borderRadius: "100px", border: "1.5px solid #DA007C", background: "white", color: "#DA007C", fontSize: "13px", fontWeight: "500", cursor: "pointer" }}
                 onMouseEnter={e => { e.currentTarget.style.background = "rgba(218,0,124,0.08)"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "white"; }}
               >
-                <IconEdit />
-                Editar
+                <IconEdit /> Editar
               </button>
-
               <button
-                style={{
-                  display: "flex", alignItems: "center", gap: "6px",
-                  padding: "7px 16px", borderRadius: "100px",
-                  border: "1.5px solid #DA007C", background: "white",
-                  color: "#DA007C", fontSize: "13px", fontWeight: "500", cursor: "pointer",
-                }}
+                style={{ display: "flex", alignItems: "center", gap: "6px", padding: "7px 16px", borderRadius: "100px", border: "1.5px solid #DA007C", background: "white", color: "#DA007C", fontSize: "13px", fontWeight: "500", cursor: "pointer" }}
                 onMouseEnter={e => { e.currentTarget.style.background = "rgba(218,0,124,0.08)"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "white"; }}
               >
-                <IconTrash />
-                Eliminar
+                <IconTrash /> Eliminar
               </button>
-
               <div style={{ marginLeft: "auto" }}>
-                <img
-                  src="/BussinessHubFoto.svg"
-                  alt="negocio"
-                  style={{ width: "38px", height: "38px", borderRadius: "50%", objectFit: "cover", border: "2px solid #eee" }}
-                />
+                <img src="/BussinessHubFoto.svg" alt="negocio" style={{ width: "38px", height: "38px", borderRadius: "50%", objectFit: "cover", border: "2px solid #eee" }} />
               </div>
             </div>
           </div>
@@ -194,130 +181,109 @@ export default function BusinessHub() {
         <div
           onClick={closeModal}
           style={{
-            position: "fixed", inset: 0,
+            position: "fixed",
+            top: 0, left: 0, right: 0, bottom: 0,
             background: "rgba(0,0,0,0.35)",
             display: "flex", alignItems: "center", justifyContent: "center",
             zIndex: 1000,
+            padding: isMobile ? "16px" : "0",
           }}
         >
           <div
             onClick={e => e.stopPropagation()}
             style={{
               background: "white", borderRadius: "20px",
-              padding: "32px", width: "560px", maxWidth: "90vw",
+              padding: isMobile ? "24px 20px" : "32px",
+              width: isMobile ? "100%" : "560px",
+              maxWidth: "100%",
               boxShadow: "0 8px 40px rgba(0,0,0,0.15)",
               position: "relative",
             }}
           >
-            {/* Cabecera del modal */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "24px" }}>
+            {/* Cabecera */}
+            <div style={{
+              display: "flex",
+              flexDirection: isMobile ? "column" : "row",
+              justifyContent: "space-between",
+              alignItems: isMobile ? "flex-start" : "flex-start",
+              gap: isMobile ? "8px" : "0",
+              marginBottom: "24px",
+            }}>
               <div>
                 <p style={{ fontSize: "17px", fontWeight: "700", color: "#1a1a1a", margin: "0 0 4px" }}>
                   {modal.isEdit ? "Editar negocio" : "Agregar negocio"}
                 </p>
                 <p style={{ fontSize: "13px", color: "#888", margin: 0 }}>
-                  {modal.isEdit
-                    ? "Actualiza la información de la conexión del negocio."
-                    : "Ingresa la información del nuevo negocio."}
+                  {modal.isEdit ? "Actualiza la información de la conexión del negocio." : "Ingresa la información del nuevo negocio."}
                 </p>
               </div>
-              <div style={{ textAlign: "right" }}>
-                <p style={{ fontSize: "12px", color: "#aaa", margin: "0 0 2px", fontWeight: "500" }}>
-                  {modal.isEdit ? "Edición" : "Registro"}
-                </p>
-                <p style={{ fontSize: "13px", fontWeight: "600", color: "#333", margin: 0 }}>
-                  {new Date().toLocaleDateString("es-ES", { day: "2-digit", month: "long", year: "numeric" })}
-                </p>
-              </div>
+              {!isMobile && (
+                <div style={{ textAlign: "right" }}>
+                  <p style={{ fontSize: "12px", color: "#aaa", margin: "0 0 2px", fontWeight: "500" }}>
+                    {modal.isEdit ? "Edición" : "Registro"}
+                  </p>
+                  <p style={{ fontSize: "13px", fontWeight: "600", color: "#333", margin: 0 }}>
+                    {new Date().toLocaleDateString("es-ES", { day: "2-digit", month: "long", year: "numeric" })}
+                  </p>
+                </div>
+              )}
             </div>
 
-            {/* Campo Género */}
+            {/* Género */}
             <div style={{ marginBottom: "20px" }}>
-              <label style={{ fontSize: "13px", color: "#555", fontWeight: "500", display: "block", marginBottom: "8px" }}>
-                Genero
-              </label>
+              <label style={{ fontSize: "13px", color: "#555", fontWeight: "500", display: "block", marginBottom: "8px" }}>Genero</label>
               <div style={{ position: "relative" }}>
-                <select
-                  value={form.genero}
-                  onChange={e => setForm({ ...form, genero: e.target.value })}
-                  style={selectStyle}
-                >
-                  <option>Femenino</option>
-                  <option>Masculino</option>
-                  <option>Indefinido</option>
+                <select value={form.genero} onChange={e => setForm({ ...form, genero: e.target.value })} style={selectStyle}>
+                  <option>Femenino</option><option>Masculino</option><option>Indefinido</option>
                 </select>
-                <svg style={{ position: "absolute", right: "16px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}
-                  width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2">
-                  <polyline points="6 9 12 15 18 9"/>
-                </svg>
+                <svg style={{ position: "absolute", right: "16px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
               </div>
             </div>
 
             {/* Correo + Contraseña */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "32px" }}>
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+              gap: "16px", marginBottom: "32px",
+            }}>
               <div>
-                <label style={{ fontSize: "13px", color: "#555", fontWeight: "500", display: "block", marginBottom: "8px" }}>
-                  Correo Electrónico
-                </label>
-                <input
-                  type="email"
-                  placeholder="nombre@gmail.com"
-                  value={form.email}
-                  onChange={e => setForm({ ...form, email: e.target.value })}
-                  style={inputStyle}
-                />
+                <label style={{ fontSize: "13px", color: "#555", fontWeight: "500", display: "block", marginBottom: "8px" }}>Correo Electrónico</label>
+                <input type="email" placeholder="nombre@gmail.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} style={inputStyle} />
               </div>
               <div>
-                <label style={{ fontSize: "13px", color: "#555", fontWeight: "500", display: "block", marginBottom: "8px" }}>
-                  Contraseña
-                </label>
-                <input
-                  type="password"
-                  placeholder="••••••••••"
-                  defaultValue={modal.isEdit ? "placeholder" : ""}
-                  style={inputStyle}
-                />
+                <label style={{ fontSize: "13px", color: "#555", fontWeight: "500", display: "block", marginBottom: "8px" }}>Contraseña</label>
+                <input type="password" placeholder="••••••••••" defaultValue={modal.isEdit ? "placeholder" : ""} style={inputStyle} />
               </div>
             </div>
 
-            {/* Botones + foto */}
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            {/* Botones */}
+            <div style={{
+              display: "flex",
+              flexDirection: isMobile ? "column" : "row",
+              alignItems: isMobile ? "stretch" : "center",
+              gap: "12px",
+            }}>
               <button
-                style={{
-                  display: "flex", alignItems: "center", gap: "6px",
-                  padding: "10px 20px", borderRadius: "100px",
-                  border: "1.5px solid #DA007C", background: "white",
-                  color: "#DA007C", fontSize: "14px", fontWeight: "600", cursor: "pointer",
-                }}
+                style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", padding: "10px 20px", borderRadius: "100px", border: "1.5px solid #DA007C", background: "white", color: "#DA007C", fontSize: "14px", fontWeight: "600", cursor: "pointer" }}
                 onMouseEnter={e => { e.currentTarget.style.background = "rgba(218,0,124,0.08)"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "white"; }}
               >
                 <IconPlus />
                 {modal.isEdit ? "Guardar cambios" : "Agregar negocio"}
               </button>
-
               <button
                 onClick={closeModal}
-                style={{
-                  display: "flex", alignItems: "center", gap: "6px",
-                  padding: "10px 20px", borderRadius: "100px",
-                  border: "1.5px solid #DA007C", background: "white",
-                  color: "#DA007C", fontSize: "14px", fontWeight: "600", cursor: "pointer",
-                }}
+                style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", padding: "10px 20px", borderRadius: "100px", border: "1.5px solid #DA007C", background: "white", color: "#DA007C", fontSize: "14px", fontWeight: "600", cursor: "pointer" }}
                 onMouseEnter={e => { e.currentTarget.style.background = "rgba(218,0,124,0.08)"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "white"; }}
               >
-                <IconTrash />
-                Cancelar
+                <IconTrash /> Cancelar
               </button>
-
-              <div style={{ marginLeft: "auto" }}>
-                <img
-                  src="/BussinessHubFoto.svg"
-                  alt="perfil"
-                  style={{ width: "44px", height: "44px", borderRadius: "50%", objectFit: "cover", border: "2px solid #eee" }}
-                />
-              </div>
+              {!isMobile && (
+                <div style={{ marginLeft: "auto" }}>
+                  <img src="/BussinessHubFoto.svg" alt="perfil" style={{ width: "44px", height: "44px", borderRadius: "50%", objectFit: "cover", border: "2px solid #eee" }} />
+                </div>
+              )}
             </div>
           </div>
         </div>
