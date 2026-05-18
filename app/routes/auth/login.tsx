@@ -1,9 +1,6 @@
 import { Link } from "react-router";
-import { useState } from "react";
 
 export default function Login() {
-  const [showPassword, setShowPassword] = useState(false);
-
   return (
     <>
       <style>{`
@@ -61,6 +58,7 @@ export default function Login() {
           100% { transform: translate(0%, 0%) scale(1.05); }
         }
 
+        /* Glass card — el blur solo aquí */
         .login-card {
           position: relative;
           z-index: 2;
@@ -96,7 +94,7 @@ export default function Login() {
 
         .login-input {
           width: 100%;
-          padding: 12px 48px 12px 20px;
+          padding: 12px 20px;
           border-radius: 100px;
           border: 1px solid rgba(200, 200, 200, 0.8);
           font-size: 14px;
@@ -144,6 +142,16 @@ export default function Login() {
           box-sizing: border-box;
         }
 
+        .login-dots {
+          position: fixed;
+          bottom: 40px;
+          right: 40px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          z-index: 3;
+        }
+
         .login-legal {
           text-align: center;
           font-size: 12px;
@@ -162,9 +170,10 @@ export default function Login() {
           .login-card { padding: 32px 20px; gap: 14px; border-radius: 18px; }
           .login-title { font-size: 22px; }
           .login-subtitle { font-size: 13px; }
-          .login-input { padding: 10px 44px 10px 16px; font-size: 13px; }
+          .login-input { padding: 10px 16px; font-size: 13px; }
           .login-btn-outline { padding: 12px; font-size: 14px; }
           .login-btn-google { padding: 12px; font-size: 13px; }
+          .login-dots { bottom: 16px; right: 16px; }
         }
 
         @media (max-width: 360px) {
@@ -199,41 +208,7 @@ export default function Login() {
                 ¿Olvidaste la contraseña?
               </span>
             </div>
-
-            {/* ── ÚNICO CAMBIO: wrapper relativo + ojito ── */}
-            <div style={{ position: "relative", width: "100%" }}>
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
-                className="login-input"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(v => !v)}
-                style={{
-                  position: "absolute", right: "16px", top: "50%",
-                  transform: "translateY(-50%)",
-                  background: "none", border: "none", cursor: "pointer",
-                  padding: "2px", display: "flex", alignItems: "center",
-                  color: "#aaa",
-                }}
-              >
-                {showPassword ? (
-                  /* Ojo abierto — contraseña visible */
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                    <circle cx="12" cy="12" r="3"/>
-                  </svg>
-                ) : (
-                  /* Ojo tachado — contraseña oculta */
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-                    <line x1="1" y1="1" x2="23" y2="23"/>
-                  </svg>
-                )}
-              </button>
-            </div>
+            <input type="password" placeholder="••••••••" className="login-input" />
           </div>
 
           <Link to="/dashboard" className="login-btn-outline">
@@ -264,6 +239,8 @@ export default function Login() {
           </button>
 
         </div>
+
+        
 
       </div>
     </>
