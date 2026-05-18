@@ -1,6 +1,9 @@
 import { Link } from "react-router";
+import { useState } from "react";
 
 export default function Signup() {
+  const [showPassword, setShowPassword] = useState(false);
+
   return (
     <>
       <style>{`
@@ -58,7 +61,6 @@ export default function Signup() {
           100% { transform: translate(0%, 0%) scale(1.05); }
         }
 
-        /* Glass card */
         .signup-card {
           position: relative;
           z-index: 2;
@@ -92,7 +94,6 @@ export default function Signup() {
           text-align: center;
         }
 
-        /* Grids responsivos */
         .grid-3 {
           width: 100%;
           display: grid;
@@ -199,50 +200,34 @@ export default function Signup() {
           margin: 0;
         }
 
-        .signup-dots {
-          position: fixed;
-          bottom: 40px;
-          right: 40px;
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          z-index: 3;
+        /* ── Input con ojito ── */
+        .signup-input-password {
+          width: 100%;
+          padding: 11px 48px 11px 16px;
+          border-radius: 100px;
+          border: 1px solid rgba(200, 200, 200, 0.8);
+          font-size: 13px;
+          box-sizing: border-box;
+          outline: none;
+          background: rgba(255, 255, 255, 0.80);
+          color: #000;
+          display: block;
         }
 
-        /* Responsive */
         @media (max-width: 640px) {
-          .grid-3 {
-            grid-template-columns: 1fr 1fr;
-          }
-          .grid-3 > :last-child {
-            grid-column: 1 / -1;
-          }
+          .grid-3 { grid-template-columns: 1fr 1fr; }
+          .grid-3 > :last-child { grid-column: 1 / -1; }
         }
 
         @media (max-width: 480px) {
-          .signup-card {
-            padding: 32px 20px;
-            gap: 14px;
-            border-radius: 18px;
-          }
-
+          .signup-card { padding: 32px 20px; gap: 14px; border-radius: 18px; }
           .signup-title { font-size: 22px; }
           .signup-subtitle { font-size: 13px; }
-
-          .grid-3 {
-            grid-template-columns: 1fr;
-          }
-          .grid-3 > :last-child {
-            grid-column: auto;
-          }
-
-          .grid-2 {
-            grid-template-columns: 1fr;
-          }
-
+          .grid-3 { grid-template-columns: 1fr; }
+          .grid-3 > :last-child { grid-column: auto; }
+          .grid-2 { grid-template-columns: 1fr; }
           .signup-btn-outline { padding: 12px; font-size: 14px; }
           .signup-btn-google { padding: 12px; font-size: 13px; }
-          .signup-dots { bottom: 16px; right: 16px; }
         }
 
         @media (max-width: 360px) {
@@ -266,23 +251,15 @@ export default function Signup() {
           {/* Fila 1: Nombre, Apellido, Género */}
           <div className="grid-3">
             <div>
-              <label style={{ fontSize: "13px", color: "#333", display: "block", marginBottom: "6px" }}>
-                Nombre *
-              </label>
+              <label style={{ fontSize: "13px", color: "#333", display: "block", marginBottom: "6px" }}>Nombre *</label>
               <input type="text" placeholder="Tu nombre" className="signup-input" />
             </div>
-
             <div>
-              <label style={{ fontSize: "13px", color: "#333", display: "block", marginBottom: "6px" }}>
-                Apellido *
-              </label>
+              <label style={{ fontSize: "13px", color: "#333", display: "block", marginBottom: "6px" }}>Apellido *</label>
               <input type="text" placeholder="Tu apellido" className="signup-input" />
             </div>
-
             <div>
-              <label style={{ fontSize: "13px", color: "#333", display: "block", marginBottom: "6px" }}>
-                Género *
-              </label>
+              <label style={{ fontSize: "13px", color: "#333", display: "block", marginBottom: "6px" }}>Género *</label>
               <select defaultValue="" className="signup-select">
                 <option value="" disabled>Seleccionar</option>
                 <option value="hombre">Hombre</option>
@@ -295,16 +272,11 @@ export default function Signup() {
           {/* Fila 2: Email + Teléfono */}
           <div className="grid-2">
             <div>
-              <label style={{ fontSize: "13px", color: "#333", display: "block", marginBottom: "6px" }}>
-                Correo electrónico *
-              </label>
+              <label style={{ fontSize: "13px", color: "#333", display: "block", marginBottom: "6px" }}>Correo electrónico *</label>
               <input type="email" placeholder="correo@ejemplo.com" className="signup-input" />
             </div>
-
             <div>
-              <label style={{ fontSize: "13px", color: "#333", display: "block", marginBottom: "6px" }}>
-                Teléfono *
-              </label>
+              <label style={{ fontSize: "13px", color: "#333", display: "block", marginBottom: "6px" }}>Teléfono *</label>
               <div className="signup-phone-row">
                 <select defaultValue="+1do" className="signup-phone-select">
                   <option value="+1do">🇩🇴 +1</option>
@@ -327,15 +299,45 @@ export default function Signup() {
             </div>
           </div>
 
-          {/* Contraseña */}
+          {/* ── ÚNICO CAMBIO: Contraseña con ojito ── */}
           <div style={{ width: "100%" }}>
             <label style={{ fontSize: "13px", color: "#333", display: "block", marginBottom: "6px" }}>
               Contraseña *
             </label>
-            <input type="password" placeholder="••••••••" className="signup-input" />
+            <div style={{ position: "relative", width: "100%" }}>
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                className="signup-input-password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(v => !v)}
+                style={{
+                  position: "absolute", right: "16px", top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "none", border: "none", cursor: "pointer",
+                  padding: "2px", display: "flex", alignItems: "center",
+                  color: "#aaa",
+                }}
+              >
+                {showPassword ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                    <line x1="1" y1="1" x2="23" y2="23"/>
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
 
-          {/* Confirmar contraseña */}
+          {/* Confirmar contraseña — sin cambios */}
           <div style={{ width: "100%" }}>
             <label style={{ fontSize: "13px", color: "#333", display: "block", marginBottom: "6px" }}>
               Confirmar contraseña *
@@ -366,8 +368,6 @@ export default function Signup() {
           </button>
 
         </div>
-
-        
 
       </div>
     </>

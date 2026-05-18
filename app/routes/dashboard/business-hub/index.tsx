@@ -136,8 +136,19 @@ export default function BusinessHub() {
             <div style={{ padding: "20px 20px 16px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                 <div>
-                  <p style={{ fontSize: "11px", color: "#aaa", margin: "0 0 2px", fontWeight: "500" }}>Lugar</p>
-                  <p style={{ fontSize: "15px", fontWeight: "700", color: "#1a1a1a", margin: 0 }}>{biz.lugar}</p>
+                  <p style={{ fontSize: "11px", color: "#aaa", margin: "0 0 6px", fontWeight: "500" }}>Lugar</p>
+                  {/* ── BADGE del nombre ── */}
+                  <span style={{
+                    display: "inline-block",
+                    background: "#FFE0CC",
+                    color: "#1a1a1a",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    padding: "4px 14px",
+                    borderRadius: "100px",
+                  }}>
+                    {biz.lugar}
+                  </span>
                 </div>
                 <Link to="/business-hub/billing/1" style={{ color: "inherit", lineHeight: 0, display: "block" }}>
                   <IconDocument />
