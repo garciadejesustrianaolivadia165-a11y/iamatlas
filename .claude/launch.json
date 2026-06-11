@@ -5,6 +5,7 @@
       "name": "iamatlas-dev",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
+      "cwd": "C:\\Users\\ADMIN\\iamatlas",
       "port": 5173,
       "autoPort": true
     }
