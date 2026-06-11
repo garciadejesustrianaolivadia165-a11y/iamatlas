@@ -131,8 +131,20 @@ export default function ClubsIndex() {
               style={{ width: "100%", height: "180px", objectFit: "cover", display: "block" }}
             />
             <div style={{ padding: "16px 20px 12px" }}>
-              <p style={{ fontSize: "11px", color: "#aaa", margin: "0 0 2px", fontWeight: "500" }}>Nombre</p>
-              <p style={{ fontSize: "15px", fontWeight: "700", color: "#1a1a1a", margin: "0 0 12px" }}>{club.nombre}</p>
+              <p style={{ fontSize: "11px", color: "#aaa", margin: "0 0 6px", fontWeight: "500" }}>Nombre</p>
+              {/* ── ÚNICO CAMBIO: badge en el nombre ── */}
+              <span style={{
+                display: "inline-block",
+                background: "#FFE0CC",
+                color: "#1a1a1a",
+                fontSize: "14px",
+                fontWeight: "600",
+                padding: "4px 14px",
+                borderRadius: "100px",
+                marginBottom: "12px",
+              }}>
+                {club.nombre}
+              </span>
               <p style={{ fontSize: "11px", color: "#aaa", margin: "0 0 2px", fontWeight: "500" }}>Ubicacion</p>
               <p style={{ fontSize: "14px", color: "#333", margin: "0 0 14px" }}>{club.ubicacion}</p>
               <div style={{ display: "flex", gap: "10px" }}>
@@ -188,7 +200,6 @@ export default function ClubsIndex() {
               boxShadow: "0 8px 40px rgba(0,0,0,0.15)",
             }}
           >
-            {/* Cabecera */}
             <div style={{
               display: "flex",
               flexDirection: isMobile ? "column" : "row",
@@ -217,7 +228,6 @@ export default function ClubsIndex() {
               )}
             </div>
 
-            {/* Género */}
             <div style={{ marginBottom: "20px" }}>
               <label style={{ fontSize: "13px", color: "#555", fontWeight: "500", display: "block", marginBottom: "8px" }}>Genero</label>
               <div style={{ position: "relative" }}>
@@ -236,7 +246,6 @@ export default function ClubsIndex() {
               </div>
             </div>
 
-            {/* Correo + Contraseña */}
             <div style={{
               display: "grid",
               gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
@@ -251,8 +260,6 @@ export default function ClubsIndex() {
                 <input type="password" placeholder="••••••••••" defaultValue={modal.isEdit ? "placeholder" : ""} style={inputStyle} />
               </div>
             </div>
-
-            {/* Botones */}
             <div style={{
               display: "flex",
               flexDirection: isMobile ? "column" : "row",
